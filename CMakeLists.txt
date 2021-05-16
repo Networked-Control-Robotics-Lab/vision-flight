@@ -5,7 +5,6 @@ set(CMAKE_BUILD_TYPE Debug)
 set(ROS_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS "-std=c++17 -g -static-libstdc++ -Wno-address-of-packed-member")
 
-find_package(PythonLibs REQUIRED)
 find_package(OpenCV REQUIRED)
 
 find_package(
@@ -18,12 +17,15 @@ find_package(
 generate_messages(DEPENDENCIES std_msgs)
 catkin_package(CATKIN_DEPENDS message_runtime)
 
-set(INC
+#==============================================================================================
+#apriltag
+
+set(APRILTAG_INC
     ./src
     ./src/lib/apriltag/
     ./src/lib/apriltag/common)
 
-set(SRC
+set(APRILTAG_SRC
     ./src/lib/apriltag/apriltag.c
     ./src/lib/apriltag/apriltag_pose.c
     ./src/lib/apriltag/apriltag_quad_thresh.c
@@ -56,7 +58,21 @@ set(SRC
     ./src/lib/apriltag/tagStandard52h13.c
     ./src/main.cpp)
 
-add_executable(apriltag ${SRC})
-include_directories(${catkin_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS} ${INC})
-target_link_libraries (apriltag ${PYTHON_LIBRARIES} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+add_executable(apriltag ${APRILTAG_SRC})
+include_directories(${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${APRILTAG_INC})
+target_link_libraries (apriltag ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(apriltag ${PROJECT_NAME}_generate_messages_cpp)
+
+#==============================================================================================
+# intrinsic calibration
+
+SET(CALIBRATION_INC
+        ./src/calibration/)
+
+SET(CALIBRATION_SRC
+	./src/calibration/intrinsic_calibration.cpp)
+
+add_executable(calibration ${CALIBRATION_SRC})
+include_directories(${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${CALIBRATION_INC})
+target_link_libraries (calibration ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+add_dependencies(calibration ${PROJECT_NAME}_generate_messages_cpp)
