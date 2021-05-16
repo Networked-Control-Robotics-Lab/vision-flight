@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(apriltag)
+project(vafs)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(ROS_BUILD_TYPE Debug)
@@ -22,8 +22,9 @@ catkin_package(CATKIN_DEPENDS message_runtime)
 
 set(APRILTAG_INC
     ./src
-    ./src/lib/apriltag/
-    ./src/lib/apriltag/common)
+    ./src/lib/apriltag
+    ./src/lib/apriltag/common
+    ./src/core)
 
 set(APRILTAG_SRC
     ./src/lib/apriltag/apriltag.c
@@ -56,12 +57,13 @@ set(APRILTAG_SRC
     ./src/lib/apriltag/tagCustom48h12.c
     ./src/lib/apriltag/tagStandard41h12.c
     ./src/lib/apriltag/tagStandard52h13.c
+    ./src/core/apriltag_utils.cpp
     ./src/main.cpp)
 
-add_executable(apriltag ${APRILTAG_SRC})
+add_executable(core ${APRILTAG_SRC})
 include_directories(${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${APRILTAG_INC})
-target_link_libraries (apriltag ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
-add_dependencies(apriltag ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries (core ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+add_dependencies(core ${PROJECT_NAME}_generate_messages_cpp)
 
 #==============================================================================================
 # intrinsic calibration
