@@ -1,9 +1,8 @@
 #include <iostream>
 #include <iomanip>
 #include <opencv2/opencv.hpp>
+#include "camera_config.hpp"
 
-#define IMAGE_WIDTH  640
-#define IMAGE_HEIGHT 480
 #define SQUARE_SIZE  0.29
 
 #define BOARD_WIDTH  6
@@ -18,7 +17,7 @@ using namespace cv;
 vector<string> image_names;
 //board size and image_size
 Size board_size = Size(BOARD_WIDTH, BOARD_HEIGHT);
-Size image_size = Size(IMAGE_WIDTH, IMAGE_HEIGHT);
+Size image_size = Size(CAMERA_IMAGE_WIDTH, CAMERA_IMAGE_HEIGHT);
 vector<vector<Point2f>> image_2d_points;
 vector<vector<Point3f>> object_3d_points;
 //intrinsic parameters
@@ -37,8 +36,8 @@ void set_img_filenames(void)
 	char img_path[100] = "";
 
 	for(int i = 1; i <= IMG_SAMPLE_SIZE; i++) {
-		sprintf(img_path, "/tmp/intrinsic_%dx%d_%d.jpg", IMAGE_WIDTH,
-		        IMAGE_HEIGHT, i);
+		sprintf(img_path, "/tmp/intrinsic_%dx%d_%d.jpg", CAMERA_IMAGE_WIDTH,
+		        CAMERA_IMAGE_HEIGHT, i);
 		image_names.push_back(img_path); 
 	}
 } 
@@ -157,8 +156,8 @@ void on_click_callback(int event, int x, int y, int flags, void* param)
 
 	if((event == CV_EVENT_LBUTTONDOWN) && (image_count <= IMG_SAMPLE_SIZE)) {
 		if(checkerboard_detected == true) {
-			sprintf(img_save_path, "/tmp/intrinsic_%dx%d_%d.jpg", IMAGE_WIDTH,
-			        IMAGE_HEIGHT, image_count);
+			sprintf(img_save_path, "/tmp/intrinsic_%dx%d_%d.jpg", CAMERA_IMAGE_WIDTH,
+			        CAMERA_IMAGE_HEIGHT, image_count);
 			imwrite(img_save_path, raw_image);
 			cout << "saving image to " << img_save_path << "\n";
 			image_count++;
@@ -171,8 +170,8 @@ void on_click_callback(int event, int x, int y, int flags, void* param)
 int main()
 {
 	cv::VideoCapture camera(0);
-	camera.set(CV_CAP_PROP_FRAME_WIDTH, IMAGE_WIDTH);
-	camera.set(CV_CAP_PROP_FRAME_HEIGHT, IMAGE_HEIGHT);
+	camera.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_IMAGE_WIDTH);
+	camera.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_IMAGE_HEIGHT);
 
 	if(camera.isOpened() == false) {
 		return 0;

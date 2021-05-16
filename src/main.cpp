@@ -1,5 +1,6 @@
 #include <iostream>
 #include "opencv2/opencv.hpp"
+#include "camera_config.hpp"
 
 extern "C" {
 #include "apriltag.h"
@@ -20,9 +21,11 @@ using namespace cv;
 int main(void)
 {
 	//initialize camera
-	VideoCapture cap(0);
-	if (!cap.isOpened()) {
-		cerr << "couldn't open video capture device" << endl;
+	VideoCapture camera(0);
+        camera.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_IMAGE_WIDTH);
+        camera.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_IMAGE_HEIGHT);
+	if (!camera.isOpened()) {
+		cerr << "couldn't open video camerature device" << endl;
 		return -1;
 	}
 
@@ -46,7 +49,7 @@ int main(void)
 
 	Mat frame, gray;
 	while (true) {
-		cap >> frame;
+		camera >> frame;
 		cvtColor(frame, gray, COLOR_BGR2GRAY);
 
 		//make an image_u8_t header for the mat data

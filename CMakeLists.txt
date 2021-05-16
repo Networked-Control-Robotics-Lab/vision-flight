@@ -67,6 +67,7 @@ add_dependencies(apriltag ${PROJECT_NAME}_generate_messages_cpp)
 # intrinsic calibration
 
 SET(CALIBRATION_INC
+        ./src/
         ./src/calibration/)
 
 SET(CALIBRATION_SRC
