@@ -13,12 +13,13 @@ extern "C" {
 #include "tagStandard41h12.h"
 #include "tagStandard52h13.h"
 #include "common/getopt.h"
+#include "apriltag_pose.h"
 }
 
 using namespace std;
 using namespace cv;
 
-void tag_visualize(cv::Mat& frame, zarray_t* detections)
+void tags_visualize(cv::Mat& frame, zarray_t* detections)
 {
 	//draw detection outlines
 	for (int i = 0; i < zarray_size(detections); i++) {
@@ -51,9 +52,30 @@ void tag_visualize(cv::Mat& frame, zarray_t* detections)
 	}
 }
 
+bool tag_localize(int id, zarray_t* detections, apriltag_detection_info_t& tag_info, apriltag_pose_t& pose)
+{
+	apriltag_detection_t *det;
+
+	for(int i = 0; i < zarray_size(detections); i++) {
+		zarray_get(detections, i, &det);
+		tag_info.det = det;
+
+		if(det->id != id) {
+			continue;
+		}
+		//XXX: how to handle more than one tag with same id?
+
+		double err = estimate_tag_pose(&tag_info, &pose);
+
+		return true; //tag exists
+	}
+
+	return false; //tag not exist
+}
+
 int main(void)
 {
-	//initialize camera
+	/* camera initialization */
 	VideoCapture camera(0);
 	camera.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_IMAGE_WIDTH);
 	camera.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_IMAGE_HEIGHT);
@@ -62,15 +84,19 @@ int main(void)
 		return -1;
 	}
 
+	/* camera parameters */
+	float fx = 656.24987;
+	float fy = 656.10660;
+	float cx = 327.36105;
+	float cy = 240.03464;
+
+	/* infomation of tag to be detected */
+	float tag_size = 0.1; //[m]
+	float tag_id = 0;
+
+	/* apriltag detector setup */
 	apriltag_family_t *tf = NULL;
 	tf = tag36h11_create();
-	//tf = tag25h9_create();
-	//tf = tag16h5_create();
-	//tf = tagCircle21h7_create();
-	//tf = tagCircle49h12_create();
-	//tf = tagStandard41h12_create();
-	//tf = tagStandard52h13_create();
-	//tf = tagCustom48h12_create();
 
 	apriltag_detector_t *td = apriltag_detector_create();
 	apriltag_detector_add_family(td, tf);
@@ -80,40 +106,53 @@ int main(void)
 	td->debug = 0;
 	td->refine_edges = 1;
 
+	apriltag_detection_info_t tag_info;
+	tag_info.tagsize = tag_size;
+	tag_info.fx = fx;
+	tag_info.fy = fy;
+	tag_info.cx = cx;
+	tag_info.cy = cy;
+
 	Mat frame, gray;
 	while (true) {
 		camera >> frame;
 		cvtColor(frame, gray, COLOR_BGR2GRAY);
 
-		//make an image_u8_t header for the mat data
-		image_u8_t im = { .width = gray.cols,
-		                  .height = gray.rows,
-		                  .stride = gray.cols,
-		                  .buf = gray.data
-		                };
+		/* convert image data to apriltag's format */
+		image_u8_t im = {
+			.width = gray.cols,
+			.height = gray.rows,
+			.stride = gray.cols,
+			.buf = gray.data
+		};
 
+		/* tags detection */
 		zarray_t *detections = apriltag_detector_detect(td, &im);
 
-		tag_visualize(frame, detections);
+		/* localization */
+		apriltag_pose_t pose;
+		if(tag_localize(tag_id, detections, tag_info, pose) == true) {
+			cout << "t:\n"
+			     << pose.t->data[0] << "  " <<pose.t->data[1] << " " << pose.t->data[2] << endl;
+			cout << "R:\n"
+			     << pose.R->data[0] << ", " << pose.R->data[1] << ", " << pose.R->data[2] << endl
+			     << pose.R->data[3] << ", " << pose.R->data[4] << ", " << pose.R->data[5] << endl
+			     << pose.R->data[6] << ", " << pose.R->data[7] << ", " << pose.R->data[8] << endl;
+			cout << "--------------------------------" << endl;
+		}
 
-		apriltag_detections_destroy(detections);
-
+		/* visualization with opencv */
+		tags_visualize(frame, detections);
 		imshow("Tag Detections", frame);
 		if (waitKey(30) >= 0) {
 			break;
 		}
+
+		apriltag_detections_destroy(detections);
 	}
 
 	apriltag_detector_destroy(td);
-
 	tag36h11_destroy(tf);
-	//tag25h9_destroy(tf);
-	//tag16h5_destroy(tf);
-	//tagCircle21h7_destroy(tf);
-	//tagCircle49h12_destroy(tf);
-	//tagStandard41h12_destroy(tf);
-	//tagStandard52h13_destroy(tf);
-	//tagCustom48h12_destroy(tf);
 
 	return 0;
 }
