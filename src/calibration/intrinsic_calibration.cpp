@@ -38,22 +38,22 @@ void set_img_filenames(void)
 	for(int i = 1; i <= IMG_SAMPLE_SIZE; i++) {
 		sprintf(img_path, "/tmp/intrinsic_%dx%d_%d.jpg", CAMERA_IMAGE_WIDTH,
 		        CAMERA_IMAGE_HEIGHT, i);
-		image_names.push_back(img_path); 
+		image_names.push_back(img_path);
 	}
-} 
+}
 
 void add_board_points(vector<Point2f> &_2d_corners, vector<Point3f> &_3d_corners)
 {
 	image_2d_points.push_back(_2d_corners);
 	object_3d_points.push_back(_3d_corners);
-} 
+}
 
 bool visualize_checkerboard(Mat &raw_image, Mat &board_visualized_img)
 {
 	Mat gray_image;
 	cv::cvtColor(raw_image, gray_image, cv::COLOR_BGR2GRAY);
 
-	vector<Point2f> corners;	
+	vector<Point2f> corners;
 
 	bool found = findChessboardCorners(gray_image, board_size, corners);
 
@@ -77,9 +77,9 @@ void estimate_intrinsic_parameters()
 	vector<Point3f> _3d_corners;
 
 	for(int i = 0; i < board_size.height; i++) {
-		for(int j = 0; j < board_size.width; j++){
+		for(int j = 0; j < board_size.width; j++) {
 			_3d_corners.push_back(Point3f((float)i * SQUARE_SIZE,
-						      (float)j * SQUARE_SIZE, 0.0f));
+			                              (float)j * SQUARE_SIZE, 0.0f));
 		}
 	}
 
@@ -91,11 +91,11 @@ void estimate_intrinsic_parameters()
 		cornerSubPix(image, _2d_corners, Size(5, 5), Size(-1, -1), param);
 		if(_2d_corners.size() == board_size.area()) {
 			add_board_points(_2d_corners, _3d_corners);
-		} 
-	} 
+		}
+	}
 
 	calibrateCamera(object_3d_points, image_2d_points, image_size,
-			camera_matrix, dist_coeffs, rvecs, tvecs);
+	                camera_matrix, dist_coeffs, rvecs, tvecs);
 
 	cout << fixed << setprecision(5);
 
@@ -143,11 +143,11 @@ void estimate_intrinsic_parameters()
 
 void undistort_image(const Mat &src, Mat &dst)
 {
-	Mat map1, map2; 
+	Mat map1, map2;
 
 	initUndistortRectifyMap(camera_matrix, dist_coeffs, Mat(), Mat(),
-				image_size, CV_32F, map1, map2); 
-	remap(src, dst, map1, map2, INTER_LINEAR); 
+	                        image_size, CV_32F, map1, map2);
+	remap(src, dst, map1, map2, INTER_LINEAR);
 }
 
 void on_click_callback(int event, int x, int y, int flags, void* param)

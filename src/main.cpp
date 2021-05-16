@@ -22,8 +22,8 @@ int main(void)
 {
 	//initialize camera
 	VideoCapture camera(0);
-        camera.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_IMAGE_WIDTH);
-        camera.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_IMAGE_HEIGHT);
+	camera.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_IMAGE_WIDTH);
+	camera.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_IMAGE_HEIGHT);
 	if (!camera.isOpened()) {
 		cerr << "couldn't open video camerature device" << endl;
 		return -1;
