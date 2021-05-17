@@ -20,11 +20,16 @@ catkin_package(CATKIN_DEPENDS message_runtime)
 #==============================================================================================
 #apriltag
 
-set(APRILTAG_INC
+set(INC
     ./src
     ./src/lib/apriltag
     ./src/lib/apriltag/common
-    ./src/core)
+    ./src/lib/mavlink_v2/common
+    ./src/lib/mavlink_v2/ncrl_mavlink
+    ./src/threads
+    ./src/mavlink
+    ./src/shell
+    ./src/apriltag)
 
 set(APRILTAG_SRC
     ./src/lib/apriltag/apriltag.c
@@ -56,12 +61,21 @@ set(APRILTAG_SRC
     ./src/lib/apriltag/tagCircle49h12.c
     ./src/lib/apriltag/tagCustom48h12.c
     ./src/lib/apriltag/tagStandard41h12.c
-    ./src/lib/apriltag/tagStandard52h13.c
-    ./src/core/apriltag_utils.cpp
+    ./src/lib/apriltag/tagStandard52h13.c)
+
+set(SRC
+    ${APRILTAG_SRC}
+    ./src/apriltag/apriltag_utils.cpp
+    ./src/mavlink/serial.cpp
+    ./src/mavlink/publisher.cpp
+    ./src/mavlink/receiver.cpp
+    ./src/mavlink/parser.cpp
+    ./src/shell/quadshell.cpp
+    ./src/shell/shell_cmds.cpp
     ./src/main.cpp)
 
-add_executable(core ${APRILTAG_SRC})
-include_directories(${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${APRILTAG_INC})
+add_executable(core ${SRC})
+include_directories(${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${INC})
 target_link_libraries (core ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(core ${PROJECT_NAME}_generate_messages_cpp)
 
