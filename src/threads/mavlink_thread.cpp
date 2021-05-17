@@ -1,9 +1,12 @@
 #include <iostream>
 #include "serial.hpp"
-#include "../lib/mavlink_v2/ncrl_mavlink/mavlink.h"
-#include "../lib/mavlink_v2/ncrl_mavlink/ncrl_mavlink.h"
 #include "../mavlink/publisher.hpp"
 #include "../mavlink/parser.hpp"
+
+extern "C" {
+#include "../lib/mavlink_v2/ncrl_mavlink/mavlink.h"
+#include "../lib/mavlink_v2/ncrl_mavlink/ncrl_mavlink.h"
+}
 
 mavlink_message_t mavlink_recpt_msg;
 mavlink_status_t mavlink_recpt_status;

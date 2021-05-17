@@ -1,6 +1,9 @@
-#include "../lib/mavlink_v2/ncrl_mavlink/mavlink.h"
-#include "ncrl_mavlink.h"
 #include "serial.hpp"
+
+extern "C" {
+#include "../lib/mavlink_v2/ncrl_mavlink/mavlink.h"
+#include "../lib/mavlink_v2/ncrl_mavlink/ncrl_mavlink.h"
+}
 
 static void send_mavlink_msg_to_serial(mavlink_message_t *msg)
 {

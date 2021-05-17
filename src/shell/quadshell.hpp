@@ -1,5 +1,4 @@
-#ifndef __QUADSHELL_HPP__
-#define __QUADSHELL_HPP__
+#pragma once
 
 #include <stdbool.h>
 
@@ -91,5 +90,3 @@ void shell_init_struct(struct shell_struct *_shell, const char *prompt_msg);
 void shell_cls(void);
 void shell_cli(struct shell_struct *_shell);
 void shell_cmd_exec(struct shell_struct *shell, struct cmd_list_entry *cmd_list, int list_size);
-
-#endif
