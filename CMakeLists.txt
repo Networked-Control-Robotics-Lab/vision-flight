@@ -72,6 +72,9 @@ set(SRC
     ./src/mavlink/parser.cpp
     ./src/shell/quadshell.cpp
     ./src/shell/shell_cmds.cpp
+    ./src/threads/shell_thread.cpp
+    ./src/threads/mavlink_thread.cpp
+    ./src/threads/apriltag_thread.cpp
     ./src/main.cpp)
 
 add_executable(core ${SRC})
