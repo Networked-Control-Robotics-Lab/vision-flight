@@ -12,6 +12,8 @@ find_package(
     std_msgs
     roscpp
     tf
+    cv_bridge
+    image_transport
     message_generation
 )
 generate_messages(DEPENDENCIES std_msgs)
@@ -72,6 +74,7 @@ set(SRC
     ./src/mavlink/parser.cpp
     ./src/shell/quadshell.cpp
     ./src/shell/shell_cmds.cpp
+    ./src/threads/ros_thread.cpp
     ./src/threads/shell_thread.cpp
     ./src/threads/mavlink_thread.cpp
     ./src/threads/apriltag_thread.cpp
