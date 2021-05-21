@@ -3,6 +3,8 @@
 #include "camera_config.hpp"
 #include "apriltag_utils.hpp"
 
+#include "ros_thread.hpp"
+
 extern "C" {
 #include "apriltag.h"
 #include "tag36h11.h"
@@ -22,14 +24,16 @@ using namespace cv;
 
 void apriltag_thread_entry(void)
 {
+	ROSCamDev ros_cam_dev("/arducam/camera/image_raw");
+
 	/* camera initialization */
-	VideoCapture camera(0);
-	camera.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_IMAGE_WIDTH);
-	camera.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_IMAGE_HEIGHT);
-	if (!camera.isOpened()) {
-		cerr << "couldn't open video camerature device" << endl;
-		exit(-1);
-	}
+	//VideoCapture camera(0);
+	//camera.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_IMAGE_WIDTH);
+	//camera.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_IMAGE_HEIGHT);
+	//if (!camera.isOpened()) {
+	//	cerr << "couldn't open video camerature device" << endl;
+	//	exit(-1);
+	//}
 
 	/* camera parameters */
 	float fx = 656.24987;
@@ -62,7 +66,9 @@ void apriltag_thread_entry(void)
 
 	Mat frame, gray;
 	while (true) {
-		camera >> frame;
+		ros_cam_dev.read(frame);
+
+		//camera >> frame;
 		cvtColor(frame, gray, COLOR_BGR2GRAY);
 
 		/* convert image data to apriltag's format */
