@@ -28,6 +28,7 @@ set(INC
     ./src/lib/apriltag/common
     ./src/lib/mavlink_v2/common
     ./src/lib/mavlink_v2/ncrl_mavlink
+    ./src/camera_dev
     ./src/threads
     ./src/mavlink
     ./src/shell
@@ -74,6 +75,7 @@ set(SRC
     ./src/mavlink/parser.cpp
     ./src/shell/quadshell.cpp
     ./src/shell/shell_cmds.cpp
+    ./src/camera_dev/ros_cam.cpp
     ./src/threads/ros_thread.cpp
     ./src/threads/shell_thread.cpp
     ./src/threads/mavlink_thread.cpp

@@ -2,8 +2,7 @@
 #include "opencv2/opencv.hpp"
 #include "camera_config.hpp"
 #include "apriltag_utils.hpp"
-
-#include "ros_thread.hpp"
+#include "ros_cam.hpp"
 
 extern "C" {
 #include "apriltag.h"
