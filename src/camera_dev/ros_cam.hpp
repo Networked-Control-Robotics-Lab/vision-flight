@@ -20,7 +20,19 @@ class ROSCamDev
 	public:
 	ROSCamDev(string topic);
 	~ROSCamDev() {}
- 
+
+	//copy constructor
+	ROSCamDev(ROSCamDev const& rhs);
+
+	//move constructor
+	ROSCamDev(ROSCamDev&& rhs);
+
+	//copy assignment
+	ROSCamDev& operator=(ROSCamDev const& rhs);
+
+	//move assignment
+	ROSCamDev& operator=(ROSCamDev&& rhs);
+
 	void cv_bridge_callback(const sensor_msgs::ImageConstPtr& msg);
 	void read(cv::Mat& ret);
 };
