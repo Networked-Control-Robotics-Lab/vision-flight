@@ -1,6 +1,5 @@
 #include <iostream>
 #include "opencv2/opencv.hpp"
-#include "camera_config.hpp"
 
 extern "C" {
 #include "apriltag.h"

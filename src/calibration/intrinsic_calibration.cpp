@@ -2,11 +2,9 @@
 #include <thread>
 #include <iomanip>
 #include <opencv2/opencv.hpp>
-#include "camera_config.hpp"
 #include "ros_cam.hpp"
 
-#define SQUARE_SIZE  0.29
-
+#define SQUARE_SIZE  0.29 //[cm]
 #define BOARD_WIDTH  6
 #define BOARD_HEIGHT 8
 
@@ -15,21 +13,25 @@
 using namespace std;
 using namespace cv;
 
-/* parameters of the camera calibrator */
+//input image
+cv::Mat raw_image;
+int image_width;
+int image_height;
+
+//calibration image names
 vector<string> image_names;
-//board size and image_size
+
+//checkerboard parameters
 Size board_size = Size(BOARD_WIDTH, BOARD_HEIGHT);
-Size image_size = Size(CAMERA_IMAGE_WIDTH, CAMERA_IMAGE_HEIGHT);
+Size image_size = Size(image_width, image_height);
 vector<vector<Point2f>> image_2d_points;
 vector<vector<Point3f>> object_3d_points;
-//intrinsic parameters
-Mat camera_matrix, dist_coeffs;
-vector<Mat> rvecs, tvecs;
-
 int image_count = 1;
 bool checkerboard_detected = false;
 
-cv::Mat raw_image;
+//intrinsic parameters
+Mat camera_matrix, dist_coeffs;
+vector<Mat> rvecs, tvecs;
 
 void set_img_filenames(void)
 {
@@ -38,8 +40,7 @@ void set_img_filenames(void)
 	char img_path[100] = "";
 
 	for(int i = 1; i <= IMG_SAMPLE_SIZE; i++) {
-		sprintf(img_path, "/tmp/intrinsic_%dx%d_%d.jpg", CAMERA_IMAGE_WIDTH,
-		        CAMERA_IMAGE_HEIGHT, i);
+		sprintf(img_path, "/tmp/intrinsic_%dx%d_%d.jpg", image_width, image_height, i);
 		image_names.push_back(img_path);
 	}
 }
@@ -147,8 +148,7 @@ void undistort_image(const Mat &src, Mat &dst)
 {
 	Mat map1, map2;
 
-	initUndistortRectifyMap(camera_matrix, dist_coeffs, Mat(), Mat(),
-	                        image_size, CV_32F, map1, map2);
+	initUndistortRectifyMap(camera_matrix, dist_coeffs, Mat(), Mat(), image_size, CV_32F, map1, map2);
 	remap(src, dst, map1, map2, INTER_LINEAR);
 }
 
@@ -158,8 +158,7 @@ void on_click_callback(int event, int x, int y, int flags, void* param)
 
 	if((event == CV_EVENT_LBUTTONDOWN) && (image_count <= IMG_SAMPLE_SIZE)) {
 		if(checkerboard_detected == true) {
-			sprintf(img_save_path, "/tmp/intrinsic_%dx%d_%d.jpg", CAMERA_IMAGE_WIDTH,
-			        CAMERA_IMAGE_HEIGHT, image_count);
+			sprintf(img_save_path, "/tmp/intrinsic_%dx%d_%d.jpg", image_width, image_height, image_count);
 			imwrite(img_save_path, raw_image);
 			cout << "saving image to " << img_save_path << "\n";
 			image_count++;
@@ -180,6 +179,11 @@ void intrinsic_calibration_thread_entry(void)
 
 	namedWindow("intrinsic calibration");
 	setMouseCallback("intrinsic calibration", on_click_callback, NULL);
+
+	/* initialize image size */
+	ros_cam_dev.read(raw_image);
+	raw_image.cols;
+	raw_image.rows;
 
 	cout << "please click the window to save 15 images for calibration.\n";
 

@@ -1,6 +1,5 @@
 #include <iostream>
 #include "opencv2/opencv.hpp"
-#include "camera_config.hpp"
 #include "apriltag_utils.hpp"
 #include "ros_cam.hpp"
 
