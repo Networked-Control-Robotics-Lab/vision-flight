@@ -1,7 +1,9 @@
 #include <iostream>
+#include <thread>
 #include <iomanip>
 #include <opencv2/opencv.hpp>
 #include "camera_config.hpp"
+#include "ros_cam.hpp"
 
 #define SQUARE_SIZE  0.29
 
@@ -167,15 +169,14 @@ void on_click_callback(int event, int x, int y, int flags, void* param)
 	}
 }
 
-int main()
+void ros_thread_entry(void)
 {
-	cv::VideoCapture camera(0);
-	camera.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_IMAGE_WIDTH);
-	camera.set(CV_CAP_PROP_FRAME_HEIGHT, CAMERA_IMAGE_HEIGHT);
+	ros::spin();
+}
 
-	if(camera.isOpened() == false) {
-		return 0;
-	}
+void intrinsic_calibration_thread_entry(void)
+{
+	ROSCamDev ros_cam_dev("/arducam/camera/image_raw");
 
 	namedWindow("intrinsic calibration");
 	setMouseCallback("intrinsic calibration", on_click_callback, NULL);
@@ -186,7 +187,7 @@ int main()
 	vector<Point2f> corners;
 
 	while(image_count <= 15) {
-		camera >> raw_image;
+		ros_cam_dev.read(raw_image);
 
 		Mat board_visualized_img;
 
@@ -205,7 +206,7 @@ int main()
 	estimate_intrinsic_parameters();
 
 	while(1) {
-		camera >> raw_image;
+		ros_cam_dev.read(raw_image);
 
 		undistort_image(raw_image, undistorted_image);
 		imshow("intrinsic calibration", undistorted_image);
@@ -213,5 +214,20 @@ int main()
 	}
 
 	destroyAllWindows();
+
+}
+
+int main(int argc, char **argv)
+{
+	ros::init(argc, argv, "vafs");
+	ros::Time::init();
+
+	ROSCamDev ros_cam_dev("/arducam/camera/image_raw");
+
+	std::thread thread_ros(ros_thread_entry);
+	std::thread thread_intrinsic_calibration(intrinsic_calibration_thread_entry);
+	thread_ros.join();
+	thread_intrinsic_calibration.join();
+
 	return 0;
 }

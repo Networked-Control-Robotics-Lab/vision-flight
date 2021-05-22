@@ -91,11 +91,13 @@ add_dependencies(core ${PROJECT_NAME}_generate_messages_cpp)
 # intrinsic calibration
 
 SET(CALIBRATION_INC
-        ./src/
-        ./src/calibration/)
+        ./src
+        ./src/calibration
+        ./src/camera_dev)
 
 SET(CALIBRATION_SRC
-	./src/calibration/intrinsic_calibration.cpp)
+	./src/calibration/intrinsic_calibration.cpp
+        ./src/camera_dev/ros_cam.cpp)
 
 add_executable(calibration ${CALIBRATION_SRC})
 include_directories(${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${CALIBRATION_INC})
