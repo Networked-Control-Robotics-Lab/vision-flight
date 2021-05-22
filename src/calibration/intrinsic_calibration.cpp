@@ -23,7 +23,7 @@ vector<string> image_names;
 
 //checkerboard parameters
 Size board_size = Size(BOARD_WIDTH, BOARD_HEIGHT);
-Size image_size = Size(image_width, image_height);
+Size image_size;
 vector<vector<Point2f>> image_2d_points;
 vector<vector<Point3f>> object_3d_points;
 int image_count = 1;
@@ -182,8 +182,9 @@ void intrinsic_calibration_thread_entry(void)
 
 	/* initialize image size */
 	ros_cam_dev.read(raw_image);
-	raw_image.cols;
-	raw_image.rows;
+	image_width = raw_image.cols;
+	image_height = raw_image.rows;
+	image_size = Size(image_width, image_height);
 
 	cout << "please click the window to save 15 images for calibration.\n";
 
