@@ -26,7 +26,9 @@ void ROSCamDev::cv_bridge_callback(const sensor_msgs::ImageConstPtr& msg)
 void ROSCamDev::read(cv::Mat& ret)
 {
 	while(cv_img_queue.empty() == true);
-	
-	ret = std::move(cv_img_queue.back());
+
+	cv::Mat tmp = cv::Mat(cv_img_queue.back());
+	ret = std::move(tmp);
+
 	cv_img_queue.pop();
 }
