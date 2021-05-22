@@ -36,13 +36,13 @@ void apriltag_thread_entry(void)
 	//}
 
 	/* camera parameters */
-	float fx = 656.24987;
-	float fy = 656.10660;
-	float cx = 327.36105;
-	float cy = 240.03464;
+	float fx = 411.64591;
+	float fy = 411.72171;
+	float cx = 306.34861;
+	float cy = 220.31898;
 
 	/* infomation of tag to be detected */
-	float tag_size = 0.1; //[m]
+	float tag_size = 0.16; //[m]
 	float tag_id = 0;
 
 	/* apriltag detector setup */
