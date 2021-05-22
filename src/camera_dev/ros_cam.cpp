@@ -15,7 +15,8 @@ ROSCamDev::ROSCamDev(string topic): img_transport(node)
 void ROSCamDev::cv_bridge_callback(const sensor_msgs::ImageConstPtr& msg)
 {
 	try {
-		cv_img_queue.push(cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image.clone());
+		cv::Mat new_img = std::move(cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8)->image);
+		cv_img_queue.push(new_img);
 	} catch (cv_bridge::Exception& e) {
 		ROS_ERROR("cv_bridge exception: %s", e.what());
 	return;
@@ -26,6 +27,6 @@ void ROSCamDev::read(cv::Mat& ret)
 {
 	while(cv_img_queue.empty() == true);
 	
-	cv_img_queue.back().copyTo(ret);
+	ret = std::move(cv_img_queue.back());
 	cv_img_queue.pop();
 }
