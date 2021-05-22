@@ -15,7 +15,9 @@ find_package(
     cv_bridge
     image_transport
     message_generation
+    arducam_usb2_ros
 )
+
 generate_messages(DEPENDENCIES std_msgs)
 catkin_package(CATKIN_DEPENDS message_runtime)
 
@@ -76,6 +78,7 @@ set(SRC
     ./src/shell/quadshell.cpp
     ./src/shell/shell_cmds.cpp
     ./src/camera_dev/ros_cam.cpp
+    ./src/camera_dev/arducam_ros_ctrl.cpp
     ./src/threads/ros_thread.cpp
     ./src/threads/shell_thread.cpp
     ./src/threads/mavlink_thread.cpp

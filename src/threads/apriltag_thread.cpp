@@ -2,6 +2,7 @@
 #include "opencv2/opencv.hpp"
 #include "apriltag_utils.hpp"
 #include "ros_cam.hpp"
+#include "arducam_ros_ctrl.hpp"
 
 extern "C" {
 #include "apriltag.h"
@@ -23,6 +24,7 @@ using namespace cv;
 void apriltag_thread_entry(void)
 {
 	ROSCamDev ros_cam_dev("/arducam/camera/image_raw");
+	arducam_ros_exposure_ctrl(0x1000);
 
 	/* camera initialization */
 	//VideoCapture camera(0);
