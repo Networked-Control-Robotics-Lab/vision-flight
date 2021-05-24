@@ -190,6 +190,23 @@ bool WaypointManager::send()
 	return succeed;
 }
 
+void WaypointManager::mavlink_rx_message_handler(mavlink_message_t& msg)
+{
+	switch(msg.msgid) {
+	/* MISSION_REQUEST_INT */
+	case 51:
+		mavlink_mission_request_int_t mission_item;
+		mavlink_msg_mission_request_int_decode(&msg, &mission_item);
+		this->recvd_mission_request_int = true;
+		this->mission_request_sequence = mission_item.seq;
+		break;
+	/* MISSION_ACK */
+	case 47:
+		this->recvd_mission_ack = true;
+		break;
+	}
+}
+
 void WaypointManager::mavlink_rx_thread_entry()
 {
 	uint8_t recvd_msg = false;
@@ -203,22 +220,8 @@ void WaypointManager::mavlink_rx_thread_entry()
 			//printf("%c", c);
 			recvd_msg = mavlink_parse_char(MAVLINK_COMM_1, (uint8_t)c, &mavlink_recvd_msg, &mavlink_rx_status);
 
-			/* pasrse the message */
 			if(recvd_msg == 1) {
-				switch(mavlink_recvd_msg.msgid) {
-				case 51: /* MISSION_REQUEST_INT */ {
-					/* decode mission request int message */
-					mavlink_mission_request_int_t mission_item;
-					mavlink_msg_mission_request_int_decode(&mavlink_recvd_msg, &mission_item);
-
-					this->recvd_mission_request_int = true;
-					this->mission_request_sequence = mission_item.seq;
-					break;
-				}
-				case 47: /* MISSION_ACK */
-					this->recvd_mission_ack = true;
-					break;
-				}
+				mavlink_rx_message_handler(mavlink_recvd_msg);
 			}
 		}
 	}
