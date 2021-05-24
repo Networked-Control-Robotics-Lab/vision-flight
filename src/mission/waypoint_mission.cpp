@@ -126,6 +126,41 @@ bool WaypointManager::send_mission_count_and_wait_ack()
 	return false;
 }
 
+bool WaypointManager::send_mission_waypoint(int index)
+{
+	uint8_t frame = MAV_FRAME_LOCAL_NED;
+	uint16_t command = 0;
+	uint8_t current = 0;
+	uint8_t autocontinue = 0;
+	float params[4] = {0.0f};
+
+	waypoint_t waypoint;
+	get_waypoint(index, waypoint);
+
+	int trial = 10;
+       	do {
+		printf("mavlink: send waypoint #%d\n\r", index);
+
+		mavlink_message_t msg;
+		mavlink_msg_mission_item_int_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
+                                                       index, frame, command, current, autocontinue,
+                                                       params[0], params[1], params[2], params[3],
+                                                       waypoint.position[0], waypoint.position[1], waypoint.position[2],
+                                                       MAV_MISSION_TYPE_MISSION);
+		send_mavlink_msg_to_serial(&msg);
+
+		if(wait_mission_request_int() == true) {
+			return true;
+		} else {
+			printf("timeout.\n\r");
+
+			if(trial == 0) {
+				return false;
+			}
+		};
+	} while(--trial);
+}
+
 bool WaypointManager::send()
 {
 	if(this->waypoints.size() == 0) {
@@ -135,45 +170,16 @@ bool WaypointManager::send()
 	/* create mavlink message reception thread */
 	std::thread thread_mavlink_rx(&WaypointManager::mavlink_rx_thread_entry, this);
 
+	/* handshake step */
 	send_mission_count_and_wait_ack();
 
-	uint8_t frame = MAV_FRAME_LOCAL_NED;
-	uint16_t command = 0;
-	uint8_t current = 0;
-	uint8_t autocontinue = 0;
-	float params[4] = {0.0f};
-
+	/* waypoints sending step */
+	bool succeed = true;
 	while(this->recvd_mission_ack == false) {
-		waypoint_t waypoint;
-		get_waypoint(this->mission_request_sequence, waypoint);
+		succeed = send_mission_waypoint(this->mission_request_sequence);
 
-		int trial = 10;
-        	do {
-			this->recvd_mission_request_int = false;
-
-			printf("mavlink: send waypoint #%d\n\r", this->mission_request_sequence);
-
-			mavlink_message_t msg;
-			mavlink_msg_mission_item_int_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
-                                                               this->mission_request_sequence, 
-                                                               frame, command, current, autocontinue,
-                                                               params[0], params[1], params[2], params[3],
-                                                               waypoint.position[0], waypoint.position[1], waypoint.position[2],
-                                                               MAV_MISSION_TYPE_MISSION);
-			send_mavlink_msg_to_serial(&msg);
-
-			if(wait_mission_request_int() == true) {
-				printf("next:%d\n\r", this->mission_request_sequence);
-				break;
-			} else {
-				printf("timeout.\n\r");
-			};
-		} while(--trial);
-
-		if(trial == 0) {
-			this->stop_mavlink_rx_thread = true;
-			thread_mavlink_rx.join();
-			return false;
+		if(succeed == false) {
+			break;
 		}
 	}
 
@@ -181,7 +187,7 @@ bool WaypointManager::send()
 	this->stop_mavlink_rx_thread = true;
 	thread_mavlink_rx.join();
 
-	return true;
+	return succeed;
 }
 
 void WaypointManager::mavlink_rx_thread_entry()

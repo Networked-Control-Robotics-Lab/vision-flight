@@ -37,6 +37,7 @@ class WaypointManager {
 	bool wait_mission_request_int();
 	bool wait_mission_ack();
 	bool send_mission_count_and_wait_ack();
+	bool send_mission_waypoint(int index);
 	void mavlink_rx_thread_entry(void);
 
 	public:
