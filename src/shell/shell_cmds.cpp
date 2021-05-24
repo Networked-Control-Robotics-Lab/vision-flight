@@ -35,11 +35,12 @@ void shell_cmd_quit(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int par
 
 void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
 {
-	WaypointManager waypoint_manager(1);
-	waypoint_manager.add_local(1, -1, 1);
-	waypoint_manager.add_local(1, 1, 1);
-	waypoint_manager.add_local(-1, 1, 1);
-	waypoint_manager.add_local(-1, -1, 1);
+	int uav_id = 1;
+	WaypointManager waypoint_manager(uav_id, WAYPOINT_CARTESIAN_FRAME);
+	waypoint_manager.add(1, -1, 1);
+	waypoint_manager.add(1, 1, 1);
+	waypoint_manager.add(-1, 1, 1);
+	waypoint_manager.add(-1, -1, 1);
 	waypoint_manager.print_list();
 	waypoint_manager.send();
 }

@@ -7,16 +7,17 @@ extern "C" {
 #include "../lib/mavlink_v2/ncrl_mavlink/ncrl_mavlink.h"
 }
 
+enum {
+	WAYPOINT_CARTESIAN_FRAME,
+	WAYPOINT_GEODESTIC_FRAME	
+} WaypointManagerFrame;
+
 using namespace std;
 
 typedef struct {
-	/* local ned coordinate system */
-	float position[3];
-
-	/* geodestic coordicate system */
-	float longitude;
-	float latitude;
-	float height;
+	float x;
+	float y;
+	float z;
 } waypoint_t;
 
 class WaypointManager {
@@ -42,14 +43,25 @@ class WaypointManager {
 	void mavlink_rx_thread_entry(void);
 
 	public:
-	WaypointManager(int _target_id): target_id(_target_id),
-                                         stop_mavlink_rx_thread(false),
-                                         recvd_mission_request_int(false),
-                                         recvd_mission_ack(false) {}
+	WaypointManager(int _target_id, int _frame): target_id(_target_id),
+                                                     stop_mavlink_rx_thread(false),
+                                                     recvd_mission_request_int(false),
+                                                     recvd_mission_ack(false) {}
 	~WaypointManager() {}
 
-	void add_local(float x, float y, float z);
-	void add_geodestic(float longitude, float latitude, float height);
+	//copy constructor
+	WaypointManager(WaypointManager const& rhs);
+
+	//move constructor
+	WaypointManager(WaypointManager&& rhs);
+
+	//copy assignment
+	WaypointManager& operator=(WaypointManager const& rhs);
+
+	//move assignment
+	WaypointManager& operator=(WaypointManager&& rhs);
+
+	void add(float x, float y, float z);
 	void clear();
 	void get_waypoint(int index, waypoint_t& waypoint);
 	void print_list();

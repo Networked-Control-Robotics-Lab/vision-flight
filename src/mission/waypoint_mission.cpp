@@ -22,22 +22,12 @@ void WaypointManager::send_mavlink_msg_to_serial(mavlink_message_t *msg)
         serial_puts((char *)buf, len);
 }
 
-void WaypointManager::add_local(float x, float y, float z)
+void WaypointManager::add(float x, float y, float z)
 {
 	waypoint_t new_waypoint;
-	new_waypoint.position[0] = x;
-	new_waypoint.position[1] = y;
-	new_waypoint.position[2] = z;
-
-	this->waypoints.push_back(new_waypoint);
-}
-
-void WaypointManager::add_geodestic(float longitude, float latitude, float height)
-{
-	waypoint_t new_waypoint;
-	new_waypoint.longitude = longitude;
-	new_waypoint.latitude = latitude;
-	new_waypoint.height = height;
+	new_waypoint.x = x;
+	new_waypoint.y = y;
+	new_waypoint.z = z;
 
 	this->waypoints.push_back(new_waypoint);
 }
@@ -57,7 +47,7 @@ void WaypointManager::print_list()
 	vector<waypoint_t>::iterator it = this->waypoints.begin();
 
 	for(int i = 0; i < this->waypoints.size(); i++) {
-		printf("#%d: x = %fm, y = %fm, z = %fm\n\r", i, it->position[0], it->position[1], it->position[2]);
+		printf("#%d: x = %fm, y = %fm, z = %fm\n\r", i, it->x, it->y, it->z);
 		it++;
 	}
 }
@@ -148,7 +138,7 @@ bool WaypointManager::send_mission_waypoint(int index, bool is_last_waypoint)
 		mavlink_msg_mission_item_int_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
                                                        index, frame, command, current, autocontinue,
                                                        params[0], params[1], params[2], params[3],
-                                                       waypoint.position[0], waypoint.position[1], waypoint.position[2],
+                                                       waypoint.x, waypoint.y, waypoint.z,
                                                        MAV_MISSION_TYPE_MISSION);
 		send_mavlink_msg_to_serial(&msg);
 
