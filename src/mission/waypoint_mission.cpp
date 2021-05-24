@@ -127,7 +127,7 @@ bool WaypointManager::send_mission_count_and_wait_ack()
 	return false;
 }
 
-bool WaypointManager::send_mission_waypoint(int index)
+bool WaypointManager::send_mission_waypoint(int index, bool is_last_waypoint)
 {
 	uint8_t frame = MAV_FRAME_LOCAL_NED;
 	uint16_t command = 0;
@@ -152,47 +152,18 @@ bool WaypointManager::send_mission_waypoint(int index)
                                                        MAV_MISSION_TYPE_MISSION);
 		send_mavlink_msg_to_serial(&msg);
 
-		/* check if successfully received the ack */
-		if(wait_mission_request_int() == true) {
-			return true;
+		bool ack_recvd = false;
+		if(is_last_waypoint == true) {
+			/* last waypoint: should receive mission ack message */
+			ack_recvd = wait_mission_ack();
 		} else {
-			printf("timeout.\n\r");
-			if(trial == 0) {
-				return false;
-			}
+			/* not the last waypoint: should receive mission request int message */
+			ack_recvd = wait_mission_request_int();
 		}
-	} while(--trial);
-}
-
-bool WaypointManager::send_last_mission_waypoint()
-{
-	int index = waypoints.size() - 1;
-
-	uint8_t frame = MAV_FRAME_LOCAL_NED;
-	uint16_t command = 0;
-	uint8_t current = 0;
-	uint8_t autocontinue = 0;
-	float params[4] = {0.0f};
-
-	waypoint_t waypoint;
-	get_waypoint(index, waypoint);
-
-	bool recvd_ack = false;
-	int trial = 10;
-       	do {
-		/* send requested waypoint */
-		printf("mavlink: send waypoint #%d\n\r", index);
-
-		mavlink_message_t msg;
-		mavlink_msg_mission_item_int_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
-                                                       index, frame, command, current, autocontinue,
-                                                       params[0], params[1], params[2], params[3],
-                                                       waypoint.position[0], waypoint.position[1], waypoint.position[2],
-                                                       MAV_MISSION_TYPE_MISSION);
-		send_mavlink_msg_to_serial(&msg);
+		
 
 		/* check if successfully received the ack */
-		if(wait_mission_ack() == true) {
+		if(ack_recvd == true) {
 			return true;
 		} else {
 			printf("timeout.\n\r");
@@ -220,11 +191,7 @@ bool WaypointManager::send()
 	while(this->recvd_mission_ack == false) {
 		bool is_last_waypoint = (this->mission_request_sequence >= (waypoints.size() - 1));
 
-		if(is_last_waypoint == true) {
-			succeed = send_last_mission_waypoint();
-		} else {
-			succeed = send_mission_waypoint(this->mission_request_sequence);
-		}
+		succeed = send_mission_waypoint(this->mission_request_sequence, is_last_waypoint);
 
 		if(is_last_waypoint == true && succeed == true) {
 			break;
