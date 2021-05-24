@@ -35,7 +35,8 @@ set(INC
     ./src/mavlink
     ./src/shell
     ./src/apriltag
-    ./src/mission)
+    ./src/mission
+    ./src/common)
 
 set(APRILTAG_SRC
     ./src/lib/apriltag/apriltag.c
@@ -85,6 +86,7 @@ set(SRC
     ./src/threads/shell_thread.cpp
     ./src/threads/mavlink_thread.cpp
     ./src/threads/apriltag_thread.cpp
+    ./src/common/sys_time.cpp
     ./src/main.cpp)
 
 add_executable(core ${SRC})

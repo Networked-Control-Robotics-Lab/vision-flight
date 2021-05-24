@@ -2,6 +2,7 @@
 #include <vector>
 #include "serial.hpp"
 #include "waypoint_mission.hpp"
+#include "sys_time.hpp"
 
 extern "C" {
 #include "../lib/mavlink_v2/ncrl_mavlink/mavlink.h"
@@ -60,13 +61,51 @@ void WaypointManager::print_list()
 	}
 }
 
+bool WaypointManager::wait_mission_request_int()
+{
+	double start_time = get_sys_time_s();
+
+	while(1) {
+		double current_time = get_sys_time_s();
+		double elapsed_time = current_time - start_time;
+
+		/* one seconds timeout */
+		if(elapsed_time >= 1.0f) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool WaypointManager::send_mission_count_and_wait_ack()
+{
+	int trial = 10;
+	do {
+		printf("mavlink: send mission count message. (handshacking)\n\r");
+
+		mavlink_message_t msg;
+		mavlink_msg_mission_count_pack(GROUND_STATION_ID, 1, &msg, this->target_id, 0,
+                                               this->waypoints.size(), MAV_MISSION_TYPE_MISSION);
+		send_mavlink_msg_to_serial(&msg);
+
+		bool ack_recvd = wait_mission_request_int();
+		if(ack_recvd == true) {
+			printf("succeeded.\n\r");
+			return true;
+		} else {
+			printf("timeout!\n\r");
+		}
+	} while(--trial);
+
+	return false;
+}
+
 bool WaypointManager::send()
 {
 	if(this->waypoints.size() == 0) {
 		return true;
 	}
 
-	mavlink_message_t msg;
-	mavlink_msg_mission_count_pack(GROUND_STATION_ID, 1, &msg, this->target_id, 0, this->waypoints.size(), MAV_MISSION_TYPE_MISSION);
-	send_mavlink_msg_to_serial(&msg);
+	send_mission_count_and_wait_ack();
 }

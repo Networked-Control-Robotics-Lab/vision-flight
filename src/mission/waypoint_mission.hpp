@@ -25,6 +25,8 @@ class WaypointManager {
 	int target_id;
 
 	void send_mavlink_msg_to_serial(mavlink_message_t *msg);
+	bool wait_mission_request_int();
+	bool send_mission_count_and_wait_ack();
 
 	public:
 	WaypointManager(int _target_id): target_id(_target_id) {}
