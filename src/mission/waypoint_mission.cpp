@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <vector>
+#include <thread>
 #include "serial.hpp"
 #include "waypoint_mission.hpp"
 #include "sys_time.hpp"
@@ -108,4 +109,37 @@ bool WaypointManager::send()
 	}
 
 	send_mission_count_and_wait_ack();
+}
+
+void WaypointManager::mavlink_rx_thread_entry()
+{
+	bool recvd_msg;
+	mavlink_message_t mavlink_recvd_msg;
+	mavlink_status_t mavlink_rx_status;
+
+	char c;
+	while(this->stop_mavlink_rx_thread == false) {
+		/* receive the message */
+		if(serial_getc(&c) != -1) {
+			//std::cout << c;
+			recvd_msg = mavlink_parse_char(MAVLINK_COMM_1, (uint8_t)c, &mavlink_recvd_msg, &mavlink_rx_status);
+		}
+
+		/* pasrse the message */
+		if(recvd_msg == true) {
+		}
+	}
+	this->stop_mavlink_rx_thread = false;
+}
+
+void WaypointManager::create_rx_thread()
+{
+	this->thread_mavlink_rx = new std::thread(&WaypointManager::mavlink_rx_thread_entry, this);
+}
+
+void WaypointManager::stop_rx_thread()
+{
+	this->stop_mavlink_rx_thread = true;
+	this->thread_mavlink_rx->join();
+	delete this->thread_mavlink_rx;
 }
