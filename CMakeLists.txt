@@ -84,7 +84,6 @@ set(SRC
     ./src/mission/waypoint_mission.cpp
     ./src/threads/ros_thread.cpp
     ./src/threads/shell_thread.cpp
-    ./src/threads/mavlink_thread.cpp
     ./src/threads/apriltag_thread.cpp
     ./src/common/sys_time.cpp
     ./src/main.cpp)

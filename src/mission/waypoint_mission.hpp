@@ -24,16 +24,26 @@ class WaypointManager {
 	vector<waypoint_t> waypoints;
 	int target_id;
 
-	std::thread* thread_mavlink_rx;
 	bool stop_mavlink_rx_thread;
+
+	/* mission request int message */
+	bool recvd_mission_request_int;
+	int mission_request_sequence;
+
+	/* mission ack message */
+	bool recvd_mission_ack;
 
 	void send_mavlink_msg_to_serial(mavlink_message_t *msg);
 	bool wait_mission_request_int();
+	bool wait_mission_ack();
 	bool send_mission_count_and_wait_ack();
 	void mavlink_rx_thread_entry(void);
 
 	public:
-	WaypointManager(int _target_id): target_id(_target_id) {}
+	WaypointManager(int _target_id): target_id(_target_id),
+                                         stop_mavlink_rx_thread(false),
+                                         recvd_mission_request_int(false),
+                                         recvd_mission_ack(false) {}
 	~WaypointManager() {}
 
 	void add_local(float x, float y, float z);
@@ -42,6 +52,4 @@ class WaypointManager {
 	void get_waypoint(int index, waypoint_t& waypoint);
 	void print_list();
 	bool send();
-	void create_rx_thread();
-	void stop_rx_thread();
 };

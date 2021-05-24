@@ -70,13 +70,37 @@ bool WaypointManager::wait_mission_request_int()
 		double current_time = get_sys_time_s();
 		double elapsed_time = current_time - start_time;
 
+		if(this->recvd_mission_request_int == true) {
+			this->recvd_mission_request_int = false;
+			return true;
+		}
+
+		/* one seconds timeout */
+		if(elapsed_time >= 1.0f) {
+			this->recvd_mission_request_int = false;
+			return false;
+		}
+	}
+}
+
+bool WaypointManager::wait_mission_ack()
+{
+	double start_time = get_sys_time_s();
+
+	while(1) {
+		double current_time = get_sys_time_s();
+		double elapsed_time = current_time - start_time;
+
+		if(this->recvd_mission_ack == true) {
+			this->recvd_mission_ack = false;
+			return true;
+		}
+
 		/* one seconds timeout */
 		if(elapsed_time >= 1.0f) {
 			return false;
 		}
 	}
-
-	return true;
 }
 
 bool WaypointManager::send_mission_count_and_wait_ack()
@@ -108,12 +132,61 @@ bool WaypointManager::send()
 		return true;
 	}
 
+	/* create mavlink message reception thread */
+	std::thread thread_mavlink_rx(&WaypointManager::mavlink_rx_thread_entry, this);
+
 	send_mission_count_and_wait_ack();
+
+	uint8_t frame = MAV_FRAME_LOCAL_NED;
+	uint16_t command = 0;
+	uint8_t current = 0;
+	uint8_t autocontinue = 0;
+	float params[4] = {0.0f};
+
+	while(this->recvd_mission_ack == false) {
+		waypoint_t waypoint;
+		get_waypoint(this->mission_request_sequence, waypoint);
+
+		int trial = 10;
+        	do {
+			this->recvd_mission_request_int = false;
+
+			printf("mavlink: send waypoint #%d\n\r", this->mission_request_sequence);
+
+			mavlink_message_t msg;
+			mavlink_msg_mission_item_int_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
+                                                               this->mission_request_sequence, 
+                                                               frame, command, current, autocontinue,
+                                                               params[0], params[1], params[2], params[3],
+                                                               waypoint.position[0], waypoint.position[1], waypoint.position[2],
+                                                               MAV_MISSION_TYPE_MISSION);
+			send_mavlink_msg_to_serial(&msg);
+
+			if(wait_mission_request_int() == true) {
+				printf("next:%d\n\r", this->mission_request_sequence);
+				break;
+			} else {
+				printf("timeout.\n\r");
+			};
+		} while(--trial);
+
+		if(trial == 0) {
+			this->stop_mavlink_rx_thread = true;
+			thread_mavlink_rx.join();
+			return false;
+		}
+	}
+
+	/* stop and kill the thread */
+	this->stop_mavlink_rx_thread = true;
+	thread_mavlink_rx.join();
+
+	return true;
 }
 
 void WaypointManager::mavlink_rx_thread_entry()
 {
-	bool recvd_msg;
+	uint8_t recvd_msg = false;
 	mavlink_message_t mavlink_recvd_msg;
 	mavlink_status_t mavlink_rx_status;
 
@@ -121,25 +194,27 @@ void WaypointManager::mavlink_rx_thread_entry()
 	while(this->stop_mavlink_rx_thread == false) {
 		/* receive the message */
 		if(serial_getc(&c) != -1) {
-			//std::cout << c;
+			//printf("%c", c);
 			recvd_msg = mavlink_parse_char(MAVLINK_COMM_1, (uint8_t)c, &mavlink_recvd_msg, &mavlink_rx_status);
-		}
 
-		/* pasrse the message */
-		if(recvd_msg == true) {
+			/* pasrse the message */
+			if(recvd_msg == 1) {
+				switch(mavlink_recvd_msg.msgid) {
+				case 51: /* MISSION_REQUEST_INT */ {
+					/* decode mission request int message */
+					mavlink_mission_request_int_t mission_item;
+					mavlink_msg_mission_request_int_decode(&mavlink_recvd_msg, &mission_item);
+
+					this->recvd_mission_request_int = true;
+					this->mission_request_sequence = mission_item.seq;
+					break;
+				}
+				case 47: /* MISSION_ACK */
+					this->recvd_mission_ack = true;
+					break;
+				}
+			}
 		}
 	}
 	this->stop_mavlink_rx_thread = false;
-}
-
-void WaypointManager::create_rx_thread()
-{
-	this->thread_mavlink_rx = new std::thread(&WaypointManager::mavlink_rx_thread_entry, this);
-}
-
-void WaypointManager::stop_rx_thread()
-{
-	this->stop_mavlink_rx_thread = true;
-	this->thread_mavlink_rx->join();
-	delete this->thread_mavlink_rx;
 }

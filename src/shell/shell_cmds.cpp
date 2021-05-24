@@ -36,12 +36,10 @@ void shell_cmd_quit(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int par
 void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
 {
 	WaypointManager waypoint_manager(1);
-	waypoint_manager.create_rx_thread();
 	waypoint_manager.add_local(1, -1, 1);
 	waypoint_manager.add_local(1, 1, 1);
 	waypoint_manager.add_local(-1, 1, 1);
 	waypoint_manager.add_local(-1, -1, 1);
 	waypoint_manager.print_list();
 	waypoint_manager.send();
-	waypoint_manager.stop_rx_thread();
 }
