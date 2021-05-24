@@ -9,6 +9,7 @@
 #include "../mavlink/publisher.hpp"
 #include "../mavlink/receiver.hpp"
 #include "quadshell.hpp"
+#include "waypoint_mission.hpp"
 
 using namespace std;
 
@@ -30,4 +31,15 @@ void shell_cmd_quit(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int par
 {
 	system("/bin/stty cooked echo");
 	exit(0);
+}
+
+void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
+{
+	WaypointManager waypoint_manager(1);
+	waypoint_manager.add_local(1, -1, 1);
+	waypoint_manager.add_local(1, 1, 1);
+	waypoint_manager.add_local(-1, 1, 1);
+	waypoint_manager.add_local(-1, -1, 1);
+	waypoint_manager.print_list();
+	waypoint_manager.send();
 }

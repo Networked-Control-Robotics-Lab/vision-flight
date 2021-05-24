@@ -34,7 +34,8 @@ set(INC
     ./src/threads
     ./src/mavlink
     ./src/shell
-    ./src/apriltag)
+    ./src/apriltag
+    ./src/mission)
 
 set(APRILTAG_SRC
     ./src/lib/apriltag/apriltag.c
@@ -79,6 +80,7 @@ set(SRC
     ./src/shell/shell_cmds.cpp
     ./src/camera_dev/ros_cam.cpp
     ./src/camera_dev/arducam_ros_ctrl.cpp
+    ./src/mission/waypoint_mission.cpp
     ./src/threads/ros_thread.cpp
     ./src/threads/shell_thread.cpp
     ./src/threads/mavlink_thread.cpp
