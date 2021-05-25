@@ -74,7 +74,7 @@ class TrajectoryManager {
 	void clear();
 	void get_trajectory(int index, trajectory_t& x, trajectory_t& y, trajectory_t& z);
 	void print_list();
-	bool send();
+	bool send_mission();
 	void send_takeoff_cmd();
 	void send_land_cmd();
 	void start(bool looping);

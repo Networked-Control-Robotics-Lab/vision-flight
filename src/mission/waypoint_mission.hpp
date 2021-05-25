@@ -67,7 +67,7 @@ class WaypointManager {
 	void clear();
 	void get_waypoint(int index, waypoint_t& waypoint);
 	void print_list();
-	bool send();
+	bool send_mission();
 	void send_takeoff_cmd();
 	void send_land_cmd();
 	void send_halt_cmd();

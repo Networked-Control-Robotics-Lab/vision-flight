@@ -156,7 +156,7 @@ bool TrajectoryManager::send_traj_item_and_wait_ack(uint8_t index, uint8_t type)
 	return false;
 }
 
-bool TrajectoryManager::send()
+bool TrajectoryManager::send_mission()
 {
 	if(this->trajs.size() == 0) {
 		return true;

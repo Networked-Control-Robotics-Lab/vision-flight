@@ -175,7 +175,7 @@ bool WaypointManager::send_mission_waypoint(int index, bool is_last_waypoint)
 	} while(--trial);
 }
 
-bool WaypointManager::send()
+bool WaypointManager::send_mission()
 {
 	if(this->waypoints.size() == 0) {
 		return true;

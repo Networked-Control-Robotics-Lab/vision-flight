@@ -44,7 +44,12 @@ void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int 
 	waypoint_manager.add(-1, 1, 1);
 	waypoint_manager.add(-1, -1, 1);
 	waypoint_manager.print_list();
-	waypoint_manager.send();
+	waypoint_manager.send_mission();
+
+	waypoint_manager.send_takeoff_cmd();
+	waypoint_manager.send_land_cmd();
+	waypoint_manager.send_halt_cmd();
+	waypoint_manager.send_resume_cmd();
 #endif
 	return;
 
@@ -60,5 +65,5 @@ void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int 
 	trajectory_manager.add(t, t, t, flight_time);
 	trajectory_manager.add(t, t, t, flight_time);
 	trajectory_manager.print_list();
-	trajectory_manager.send();
+	trajectory_manager.send_mission();
 }
