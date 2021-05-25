@@ -174,7 +174,11 @@ bool WaypointManager::send()
 	std::thread thread_mavlink_rx(&WaypointManager::mavlink_rx_thread_entry, this);
 
 	/* handshake step */
-	send_mission_count_and_wait_ack();
+	if(send_mission_count_and_wait_ack() == false) {
+		this->stop_mavlink_rx_thread = true;
+		thread_mavlink_rx.join();
+		return false;
+	}
 
 	/* waypoints sending step */
 	bool succeed = true;
