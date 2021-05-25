@@ -82,6 +82,7 @@ set(SRC
     ./src/camera_dev/ros_cam.cpp
     ./src/camera_dev/arducam_ros_ctrl.cpp
     ./src/mission/waypoint_mission.cpp
+    ./src/mission/trajectory_mission.cpp
     ./src/threads/ros_thread.cpp
     ./src/threads/shell_thread.cpp
     ./src/threads/apriltag_thread.cpp

@@ -10,6 +10,7 @@
 #include "../mavlink/receiver.hpp"
 #include "quadshell.hpp"
 #include "waypoint_mission.hpp"
+#include "trajectory_mission.hpp"
 
 using namespace std;
 
@@ -36,6 +37,7 @@ void shell_cmd_quit(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int par
 void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
 {
 	int uav_id = 1;
+#if 0
 	WaypointManager waypoint_manager(uav_id, WAYPOINT_CARTESIAN_FRAME);
 	waypoint_manager.add(1, -1, 1);
 	waypoint_manager.add(1, 1, 1);
@@ -43,4 +45,23 @@ void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int 
 	waypoint_manager.add(-1, -1, 1);
 	waypoint_manager.print_list();
 	waypoint_manager.send();
+#endif
+
+	trajectory_t t;
+	for(int i = 0; i < 8; i++) {
+		t.pos_coeff[i] = i;
+	}
+	for(int i = 0; i < 7; i++) {
+		t.vel_coeff[i] = i;
+	}
+	for(int i = 0; i < 6; i++) {
+		t.accel_coeff[i] = i;
+	}
+
+	TrajectoryManager trajectory_manager(uav_id);
+	trajectory_manager.add(t, t, t);
+	trajectory_manager.add(t, t, t);
+	trajectory_manager.add(t, t, t);
+	trajectory_manager.add(t, t, t);
+	trajectory_manager.print_list();
 }
