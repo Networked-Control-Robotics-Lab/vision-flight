@@ -214,6 +214,18 @@ bool WaypointManager::send_mission()
 	return succeed;
 }
 
+void WaypointManager::send_start_cmd()
+{
+	//XXX: emulate what qgroundcontrol do, may change the behavior later
+	uint8_t base_mode = 81;
+	uint32_t custom_mode = 0;
+
+	mavlink_message_t msg;
+	mavlink_msg_set_mode_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg,
+                                       this->target_id, base_mode, custom_mode);
+	send_mavlink_msg_to_serial(&msg);
+}
+
 void WaypointManager::send_takeoff_cmd()
 {
 	uint8_t confirm = 0;
