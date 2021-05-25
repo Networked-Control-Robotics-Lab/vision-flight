@@ -8,7 +8,8 @@ class MissionManager {
 	WaypointManager waypoint;
 	TrajectoryManager trajectory;
 
-	MissionManager(int target_id, bool traj_z_enabled): waypoint(target_id, WAYPOINT_CARTESIAN_FRAME),
-                                                            trajectory(target_id, traj_z_enabled) {}
+	MissionManager() {};
+	MissionManager(int target_id, int frame, bool traj_z_enabled): waypoint(target_id, frame),
+                                                                       trajectory(target_id, traj_z_enabled) {}
 	~MissionManager() {}
 };

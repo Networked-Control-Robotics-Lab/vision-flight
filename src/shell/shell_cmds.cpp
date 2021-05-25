@@ -15,6 +15,8 @@
 
 using namespace std;
 
+extern MissionManager mission_manager;
+
 void shell_cmd_help(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
 {
 }
@@ -83,9 +85,6 @@ void shell_cmd_traj(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int par
 
 void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
 {
-	int uav_id = 1;
-	MissionManager mission_manager(uav_id, WAYPOINT_CARTESIAN_FRAME);
-
 	mission_manager.waypoint.add(1, -1, 1);
 	mission_manager.waypoint.add(1, 1, 1);
 	mission_manager.waypoint.add(-1, 1, 1);

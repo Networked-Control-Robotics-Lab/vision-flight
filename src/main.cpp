@@ -5,14 +5,18 @@
 #include "shell_thread.hpp"
 #include "ros_thread.hpp"
 #include "serial.hpp"
+#include "mission_manager.hpp"
 
 using namespace std;
+
+MissionManager mission_manager;
 
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "vafs");
 	ros::Time::init();
 
+	mission_manager = MissionManager(1, WAYPOINT_CARTESIAN_FRAME, false);
 	serial_init("/dev/ttyUSB0", 115200);
 
 	std::thread thread_ros(ros_thread_entry);

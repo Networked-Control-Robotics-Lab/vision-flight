@@ -44,6 +44,7 @@ class WaypointManager {
 	void mavlink_rx_thread_entry(void);
 
 	public:
+	WaypointManager() {}
 	WaypointManager(int _target_id, int _frame): target_id(_target_id),
                                                      frame(_frame),
                                                      stop_mavlink_rx_thread(false),
@@ -52,16 +53,52 @@ class WaypointManager {
 	~WaypointManager() {}
 
 	//copy constructor
-	WaypointManager(WaypointManager const& rhs);
+	WaypointManager(WaypointManager const& rhs): waypoints(rhs.waypoints),
+                                                     target_id(rhs.target_id),
+                                                     frame(rhs.frame),
+                                                     stop_mavlink_rx_thread(rhs.stop_mavlink_rx_thread),
+                                                     recvd_mission_request_int(rhs.recvd_mission_request_int),
+                                                     mission_request_sequence(rhs.mission_request_sequence),
+                                                     recvd_mission_ack(rhs.recvd_mission_ack) {}
 
 	//move constructor
-	WaypointManager(WaypointManager&& rhs);
+	WaypointManager(WaypointManager&& rhs): waypoints(std::move(rhs.waypoints)),
+                                                target_id(std::move(rhs.target_id)),
+                                                frame(std::move(rhs.frame)),
+                                                stop_mavlink_rx_thread(std::move(rhs.stop_mavlink_rx_thread)),
+                                                recvd_mission_request_int(std::move(rhs.recvd_mission_request_int)),
+                                                mission_request_sequence(std::move(rhs.mission_request_sequence)),
+                                                recvd_mission_ack(std::move(rhs.recvd_mission_ack)) {}
 
 	//copy assignment
-	WaypointManager& operator=(WaypointManager const& rhs);
+	WaypointManager& operator=(WaypointManager const& rhs) {
+		if(this == &rhs) {
+			return *this;
+		}
+
+		waypoints = rhs.waypoints;
+		target_id = rhs.target_id;
+		frame = rhs.frame;
+		stop_mavlink_rx_thread = rhs.stop_mavlink_rx_thread;
+		recvd_mission_request_int = rhs.recvd_mission_request_int;
+		mission_request_sequence = rhs.mission_request_sequence;
+		recvd_mission_ack = rhs.recvd_mission_ack;
+	}
 
 	//move assignment
-	WaypointManager& operator=(WaypointManager&& rhs);
+	WaypointManager& operator=(WaypointManager&& rhs) {
+		if(this == &rhs) {
+			return *this;
+		}
+
+		waypoints = std::move(rhs.waypoints);
+		target_id = std::move(rhs.target_id);
+		frame = std::move(rhs.frame);
+		stop_mavlink_rx_thread = std::move(rhs.stop_mavlink_rx_thread);
+		recvd_mission_request_int = std::move(rhs.recvd_mission_request_int);
+		mission_request_sequence = std::move(rhs.mission_request_sequence);
+		recvd_mission_ack = std::move(rhs.recvd_mission_ack);
+	}
 
 	void add(float x, float y, float z);
 	void clear();
