@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <vector>
 #include <thread>
-#include "serial.hpp"
+#include <unistd.h>
 #include "waypoint_mission.hpp"
 #include "sys_time.hpp"
 
@@ -13,6 +13,11 @@ extern "C" {
 #define GROUND_STATION_ID 0
 
 using namespace std;
+
+void WaypointManager::serial_puts(char *s, size_t size)
+{
+	write(this->serial_fd, s, size);
+}
 
 void WaypointManager::send_mavlink_msg_to_serial(mavlink_message_t *msg)
 {
@@ -181,13 +186,8 @@ bool WaypointManager::send_mission()
 		return true;
 	}
 
-	/* create mavlink message reception thread */
-	std::thread thread_mavlink_rx(&WaypointManager::mavlink_rx_thread_entry, this);
-
 	/* handshake step */
 	if(send_mission_count_and_wait_ack() == false) {
-		this->stop_mavlink_rx_thread = true;
-		thread_mavlink_rx.join();
 		return false;
 	}
 
@@ -206,10 +206,6 @@ bool WaypointManager::send_mission()
 			break;
 		}
 	}
-
-	/* stop and kill the thread */
-	this->stop_mavlink_rx_thread = true;
-	thread_mavlink_rx.join();
 
 	return succeed;
 }
@@ -297,25 +293,4 @@ void WaypointManager::mavlink_rx_message_handler(mavlink_message_t& msg)
 		this->recvd_mission_ack = true;
 		break;
 	}
-}
-
-void WaypointManager::mavlink_rx_thread_entry()
-{
-	uint8_t recvd_msg = false;
-	mavlink_message_t mavlink_recvd_msg;
-	mavlink_status_t mavlink_rx_status;
-
-	char c;
-	while(this->stop_mavlink_rx_thread == false) {
-		/* receive the message */
-		if(serial_getc(&c) != -1) {
-			//printf("%c", c);
-			recvd_msg = mavlink_parse_char(MAVLINK_COMM_1, (uint8_t)c, &mavlink_recvd_msg, &mavlink_rx_status);
-
-			if(recvd_msg == 1) {
-				mavlink_rx_message_handler(mavlink_recvd_msg);
-			}
-		}
-	}
-	this->stop_mavlink_rx_thread = false;
 }

@@ -32,7 +32,6 @@ set(INC
     ./src/lib/mavlink_v2/ncrl_mavlink
     ./src/camera_dev
     ./src/threads
-    ./src/mavlink
     ./src/shell
     ./src/apriltag
     ./src/mission
@@ -73,10 +72,6 @@ set(APRILTAG_SRC
 set(SRC
     ${APRILTAG_SRC}
     ./src/apriltag/apriltag_utils.cpp
-    ./src/mavlink/serial.cpp
-    ./src/mavlink/publisher.cpp
-    ./src/mavlink/receiver.cpp
-    ./src/mavlink/parser.cpp
     ./src/shell/quadshell.cpp
     ./src/shell/shell_cmds.cpp
     ./src/camera_dev/ros_cam.cpp

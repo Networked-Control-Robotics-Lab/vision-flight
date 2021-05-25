@@ -6,8 +6,6 @@
 #include <signal.h>
 #include "../lib/mavlink_v2/ncrl_mavlink/mavlink.h"
 #include "ncrl_mavlink.h"
-#include "../mavlink/publisher.hpp"
-#include "../mavlink/receiver.hpp"
 #include "quadshell.hpp"
 #include "waypoint_mission.hpp"
 #include "trajectory_mission.hpp"
