@@ -93,7 +93,7 @@ bool TrajectoryManager::send_traj_write_and_wait_ack()
 		printf("mavlink: send polynomial trajectory write message. (handshacking)\n\r");
 
 		uint8_t _z_enabled = (z_enabled == true ? 1 : 0);
-		uint8_t _yaw_enabled = (yaw_enabled == true ? 1 : 0);
+		uint8_t _yaw_enabled = 0;
 
 		mavlink_message_t msg;
 		mavlink_msg_polynomial_trajectory_write_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,

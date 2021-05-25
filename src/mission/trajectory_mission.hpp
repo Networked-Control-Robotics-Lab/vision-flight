@@ -36,7 +36,6 @@ class TrajectoryManager {
 	bool stop_mavlink_rx_thread;
 
 	bool z_enabled;
-	bool yaw_enabled;
 
 	/* mavlink variables */
 	bool recvd_traj_ack;
@@ -51,11 +50,10 @@ class TrajectoryManager {
 	void mavlink_rx_thread_entry();
 
 	public:
-	TrajectoryManager(int _target_id, bool _z_enabled, bool _yaw_enabled): target_id(_target_id),
-                                                                               z_enabled(_z_enabled),
-                                                                               yaw_enabled(_yaw_enabled),
-                                                                               recvd_traj_ack(false),
-                                                                               stop_mavlink_rx_thread(false) {}
+	TrajectoryManager(int _target_id, bool _z_enabled): target_id(_target_id),
+                                                            z_enabled(_z_enabled),
+                                                            recvd_traj_ack(false),
+                                                            stop_mavlink_rx_thread(false) {}
 	~TrajectoryManager() {}
 
 	//copy constructor

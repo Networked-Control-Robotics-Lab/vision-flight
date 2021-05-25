@@ -11,6 +11,7 @@
 #include "quadshell.hpp"
 #include "waypoint_mission.hpp"
 #include "trajectory_mission.hpp"
+#include "mission_manager.hpp"
 
 using namespace std;
 
@@ -83,22 +84,20 @@ void shell_cmd_traj(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int par
 void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
 {
 	int uav_id = 1;
-#if 1
-	WaypointManager waypoint_manager(uav_id, WAYPOINT_CARTESIAN_FRAME);
-	waypoint_manager.add(1, -1, 1);
-	waypoint_manager.add(1, 1, 1);
-	waypoint_manager.add(-1, 1, 1);
-	waypoint_manager.add(-1, -1, 1);
-	waypoint_manager.print_list();
-	waypoint_manager.send_mission();
+	MissionManager mission_manager(uav_id, WAYPOINT_CARTESIAN_FRAME);
 
-	waypoint_manager.send_takeoff_cmd();
-	waypoint_manager.send_land_cmd();
-	waypoint_manager.send_halt_cmd();
-	waypoint_manager.send_resume_cmd();
-	waypoint_manager.send_start_cmd();
-#endif
-	return;
+	mission_manager.waypoint.add(1, -1, 1);
+	mission_manager.waypoint.add(1, 1, 1);
+	mission_manager.waypoint.add(-1, 1, 1);
+	mission_manager.waypoint.add(-1, -1, 1);
+	mission_manager.waypoint.print_list();
+	mission_manager.waypoint.send_mission();
+
+	mission_manager.waypoint.send_takeoff_cmd();
+	mission_manager.waypoint.send_land_cmd();
+	mission_manager.waypoint.send_halt_cmd();
+	mission_manager.waypoint.send_resume_cmd();
+	mission_manager.waypoint.send_start_cmd();
 
 	trajectory_t t;
 	for(int i = 0; i < 8; i++) {
@@ -106,11 +105,10 @@ void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int 
 	}
 	float flight_time = 2;
 
-	TrajectoryManager trajectory_manager(uav_id, false, false);
-	trajectory_manager.add(t, t, t, flight_time);
-	trajectory_manager.add(t, t, t, flight_time);
-	trajectory_manager.add(t, t, t, flight_time);
-	trajectory_manager.add(t, t, t, flight_time);
-	trajectory_manager.print_list();
-	trajectory_manager.send_mission();
+	mission_manager.trajectory.add(t, t, t, flight_time);
+	mission_manager.trajectory.add(t, t, t, flight_time);
+	mission_manager.trajectory.add(t, t, t, flight_time);
+	mission_manager.trajectory.add(t, t, t, flight_time);
+	mission_manager.trajectory.print_list();
+	mission_manager.trajectory.send_mission();
 }
