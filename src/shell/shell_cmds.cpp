@@ -20,6 +20,7 @@ void shell_cmd_help(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int par
 
 void shell_cmd_clear(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
 {
+	shell_cls();
 }
 
 void shell_cmd_exit(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
@@ -32,6 +33,51 @@ void shell_cmd_quit(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int par
 {
 	system("/bin/stty cooked echo");
 	exit(0);
+}
+
+void shell_cmd_waypoint(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
+{
+	if(param_cnt == 5) {
+		if(strcmp(param_list[1], "add") == 0) {
+			//waypoint_add_cmd_handler(param_list);
+		}
+	} else if(param_cnt == 2) {
+		if(strcmp(param_list[1], "start") == 0) {
+			//waypoint_start_cmd_handler(param_list);
+		} else if(strcmp(param_list[1], "list") == 0) {
+			//waypoint_list_cmd_handler(param_list);
+		} else if(strcmp(param_list[1], "halt") == 0) {
+			//waypoint_halt_cmd_handler(param_list);
+		} else if(strcmp(param_list[1], "resume") == 0) {
+			//waypoint_resume_cmd_handler(param_list);
+		} else {
+			shell_puts("unknown waypoint command!\n\r");
+		}
+	} else {
+		shell_puts("waypoint add x y z: add new waypoint\n\r"
+		           "waypoint start: start waypoint waypoint\n\r"
+		           "waypoint list: list current waypoint list\n\r"
+		           "waypoint halt: halt current executing waypoint waypoint\n\r"
+		           "waypoint resume: resume current halting waypoint waypoint\n\r");
+	}
+}
+
+void shell_cmd_traj(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
+{
+	if(param_cnt == 2) {
+		if(strcmp(param_list[1], "plan") == 0) {
+			//shell_cmd_traj_plan(param_list, param_cnt);
+		} else if(strcmp(param_list[1], "start") == 0) {
+			//shell_cmd_traj_start(param_list, param_cnt);
+		} else if(strcmp(param_list[1], "stop") == 0) {
+			//shell_cmd_traj_stop(param_list, param_cnt);
+		}
+
+	} else {
+		printf("traj plan: plan trajectory\n\r"
+		       "traj start: start trajectoy following\n\r"
+		       "traj stop: stop trajectory following\n\r");
+	}
 }
 
 void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
@@ -50,6 +96,7 @@ void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int 
 	waypoint_manager.send_land_cmd();
 	waypoint_manager.send_halt_cmd();
 	waypoint_manager.send_resume_cmd();
+	waypoint_manager.send_start_cmd();
 #endif
 	return;
 

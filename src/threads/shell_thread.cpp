@@ -10,6 +10,8 @@ struct cmd_list_entry shell_cmd_list[] = {
 	DEF_SHELL_CMD(clear)
 	DEF_SHELL_CMD(exit)
 	DEF_SHELL_CMD(quit)
+	DEF_SHELL_CMD(waypoint)
+	DEF_SHELL_CMD(traj)
 	DEF_SHELL_CMD(mission)
 };
 
