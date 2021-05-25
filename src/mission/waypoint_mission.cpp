@@ -119,7 +119,18 @@ bool WaypointManager::send_mission_count_and_wait_ack()
 
 bool WaypointManager::send_mission_waypoint(int index, bool is_last_waypoint)
 {
-	uint8_t frame = MAV_FRAME_LOCAL_NED;
+	uint8_t _frame = MAV_FRAME_LOCAL_NED;
+	switch(this->frame) {
+	case WAYPOINT_GEODETIC_FRAME:
+		_frame = MAV_FRAME_GLOBAL;
+		break;
+	case WAYPOINT_CARTESIAN_FRAME:
+		_frame = MAV_FRAME_LOCAL_ENU;
+		break;
+	default:
+		return false;
+	}
+
 	uint16_t command = 0;
 	uint8_t current = 0;
 	uint8_t autocontinue = 0;
@@ -136,7 +147,7 @@ bool WaypointManager::send_mission_waypoint(int index, bool is_last_waypoint)
 
 		mavlink_message_t msg;
 		mavlink_msg_mission_item_int_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
-                                                       index, frame, command, current, autocontinue,
+                                                       index, _frame, command, current, autocontinue,
                                                        params[0], params[1], params[2], params[3],
                                                        waypoint.x, waypoint.y, waypoint.z,
                                                        MAV_MISSION_TYPE_MISSION);

@@ -37,7 +37,7 @@ void shell_cmd_quit(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int par
 void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
 {
 	int uav_id = 1;
-#if 0
+#if 1
 	WaypointManager waypoint_manager(uav_id, WAYPOINT_CARTESIAN_FRAME);
 	waypoint_manager.add(1, -1, 1);
 	waypoint_manager.add(1, 1, 1);
@@ -46,6 +46,7 @@ void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int 
 	waypoint_manager.print_list();
 	waypoint_manager.send();
 #endif
+	return;
 
 	trajectory_t t;
 	for(int i = 0; i < 8; i++) {

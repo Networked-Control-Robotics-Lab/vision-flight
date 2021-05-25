@@ -9,7 +9,7 @@ extern "C" {
 
 enum {
 	WAYPOINT_CARTESIAN_FRAME,
-	WAYPOINT_GEODESTIC_FRAME	
+	WAYPOINT_GEODETIC_FRAME	
 } WaypointManagerFrame;
 
 using namespace std;
@@ -24,6 +24,7 @@ class WaypointManager {
 	private:
 	vector<waypoint_t> waypoints;
 	int target_id;
+	int frame;
 
 	bool stop_mavlink_rx_thread;
 
@@ -44,6 +45,7 @@ class WaypointManager {
 
 	public:
 	WaypointManager(int _target_id, int _frame): target_id(_target_id),
+                                                     frame(_frame),
                                                      stop_mavlink_rx_thread(false),
                                                      recvd_mission_request_int(false),
                                                      recvd_mission_ack(false) {}
