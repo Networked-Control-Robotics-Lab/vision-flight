@@ -214,6 +214,30 @@ bool WaypointManager::send()
 	return succeed;
 }
 
+void WaypointManager::send_takeoff_cmd()
+{
+	uint8_t confirm = 0;
+	float params[7] = {0};
+
+	mavlink_message_t msg;
+	mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
+	                                   MAV_CMD_NAV_TAKEOFF, confirm, params[0], params[1], params[2], params[3],
+	                                   params[4], params[5], params[6]);
+	send_mavlink_msg_to_serial(&msg);
+}
+
+void WaypointManager::send_land_cmd()
+{
+	uint8_t confirm = 0;
+	float params[7];
+
+	mavlink_message_t msg;
+	mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
+	                                   MAV_CMD_NAV_LAND, confirm, params[0], params[1], params[2], params[3],
+	                                   params[4], params[5], params[6]);
+	send_mavlink_msg_to_serial(&msg);
+}
+
 void WaypointManager::mavlink_rx_message_handler(mavlink_message_t& msg)
 {
 	switch(msg.msgid) {
