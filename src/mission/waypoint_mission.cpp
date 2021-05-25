@@ -238,6 +238,38 @@ void WaypointManager::send_land_cmd()
 	send_mavlink_msg_to_serial(&msg);
 }
 
+void WaypointManager::send_halt_cmd()
+{
+	uint16_t cmd = MAV_CMD_OVERRIDE_GOTO;
+	uint8_t confirm = 0;
+	float params[7] = {0};
+
+	params[0] = MAV_GOTO_DO_HOLD;
+	params[1] = MAV_GOTO_HOLD_AT_CURRENT_POSITION;
+	params[2] = MAV_FRAME_LOCAL_ENU;
+
+	mavlink_message_t msg;
+	mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
+	                                   cmd, confirm, params[0], params[1], params[2], params[3],
+	                                   params[4], params[5], params[6]);
+	send_mavlink_msg_to_serial(&msg);
+}
+
+void WaypointManager::send_resume_cmd()
+{
+	uint16_t cmd = MAV_CMD_OVERRIDE_GOTO;
+	uint8_t confirm = 0;
+	float params[7] = {0};
+
+	params[0] = MAV_GOTO_DO_CONTINUE;
+
+	mavlink_message_t msg;
+	mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
+	                                   cmd, confirm, params[0], params[1], params[2], params[3],
+	                                   params[4], params[5], params[6]);
+	send_mavlink_msg_to_serial(&msg);
+}
+
 void WaypointManager::mavlink_rx_message_handler(mavlink_message_t& msg)
 {
 	switch(msg.msgid) {

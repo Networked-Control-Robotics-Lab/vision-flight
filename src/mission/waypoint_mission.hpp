@@ -70,4 +70,6 @@ class WaypointManager {
 	bool send();
 	void send_takeoff_cmd();
 	void send_land_cmd();
+	void send_halt_cmd();
+	void send_resume_cmd();
 };
