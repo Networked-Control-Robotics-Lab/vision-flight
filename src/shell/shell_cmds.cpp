@@ -58,10 +58,11 @@ void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int 
 		t.accel_coeff[i] = i;
 	}
 
-	TrajectoryManager trajectory_manager(uav_id);
+	TrajectoryManager trajectory_manager(uav_id, false, false);
 	trajectory_manager.add(t, t, t);
 	trajectory_manager.add(t, t, t);
 	trajectory_manager.add(t, t, t);
 	trajectory_manager.add(t, t, t);
 	trajectory_manager.print_list();
+	trajectory_manager.send();
 }
