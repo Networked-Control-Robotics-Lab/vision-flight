@@ -201,6 +201,22 @@ bool TrajectoryManager::send()
 	return succeed;
 }
 
+void TrajectoryManager::start(bool looping)
+{
+	mavlink_message_t msg;
+	mavlink_msg_polynomial_trajectory_cmd_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id,
+                                                        0, TRAJECTORY_FOLLOWING_START, looping);
+	send_mavlink_msg_to_serial(&msg);
+}
+
+void TrajectoryManager::stop()
+{
+	mavlink_message_t msg;
+	mavlink_msg_polynomial_trajectory_cmd_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id,
+                                                        0, TRAJECTORY_FOLLOWING_STOP, 0);
+	send_mavlink_msg_to_serial(&msg);
+}
+
 void TrajectoryManager::mavlink_rx_message_handler(mavlink_message_t& msg)
 {
 	switch(msg.msgid) {

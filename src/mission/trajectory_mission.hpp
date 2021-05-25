@@ -75,4 +75,6 @@ class TrajectoryManager {
 	void get_trajectory(int index, trajectory_t& x, trajectory_t& y, trajectory_t& z);
 	void print_list();
 	bool send();
+	void start(bool looping);
+	void stop();
 };
