@@ -49,20 +49,15 @@ void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int 
 
 	trajectory_t t;
 	for(int i = 0; i < 8; i++) {
-		t.pos_coeff[i] = i;
+		t.coeff[i] = i;
 	}
-	for(int i = 0; i < 7; i++) {
-		t.vel_coeff[i] = i;
-	}
-	for(int i = 0; i < 6; i++) {
-		t.accel_coeff[i] = i;
-	}
+	float flight_time = 2;
 
 	TrajectoryManager trajectory_manager(uav_id, false, false);
-	trajectory_manager.add(t, t, t);
-	trajectory_manager.add(t, t, t);
-	trajectory_manager.add(t, t, t);
-	trajectory_manager.add(t, t, t);
+	trajectory_manager.add(t, t, t, flight_time);
+	trajectory_manager.add(t, t, t, flight_time);
+	trajectory_manager.add(t, t, t, flight_time);
+	trajectory_manager.add(t, t, t, flight_time);
 	trajectory_manager.print_list();
 	trajectory_manager.send();
 }

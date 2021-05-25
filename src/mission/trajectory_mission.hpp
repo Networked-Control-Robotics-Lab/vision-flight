@@ -11,16 +11,21 @@ extern "C" {
 
 using namespace std;
 
+enum {
+	TRAJECTORY_TYPE_X,
+	TRAJECTORY_TYPE_Y,
+	TRAJECTORY_TYPE_Z
+} TrajectoryType;
+
 typedef struct {
-	float pos_coeff[8];
-	float vel_coeff[7];
-	float accel_coeff[6];
+	float coeff[8];
 } trajectory_t;
 
 typedef struct {
 	trajectory_t x;
 	trajectory_t y;
 	trajectory_t z;
+	float flight_time;
 } trajectory3d_t;
 
 class TrajectoryManager {
@@ -38,9 +43,10 @@ class TrajectoryManager {
 	uint8_t traj_ack_val;
 
 	void send_mavlink_msg_to_serial(mavlink_message_t *msg);
-	void print_trajectory(float *traj_coeff, int coeff_size);
+	void print_trajectory(float *coeff, int coeff_size);
 	bool wait_trajectory_ack();
 	bool send_traj_write_and_wait_ack();
+	bool send_traj_item_and_wait_ack(uint8_t index, uint8_t type);
 	void mavlink_rx_message_handler(mavlink_message_t& msg);
 	void mavlink_rx_thread_entry();
 
@@ -52,7 +58,19 @@ class TrajectoryManager {
                                                                                stop_mavlink_rx_thread(false) {}
 	~TrajectoryManager() {}
 
-	void add(trajectory_t& x, trajectory_t& y, trajectory_t& z);
+	//copy constructor
+	TrajectoryManager(TrajectoryManager const& rhs);
+
+	//move constructor
+	TrajectoryManager(TrajectoryManager&& rhs);
+
+	//copy assignment
+	TrajectoryManager& operator=(TrajectoryManager const& rhs);
+
+	//move assignment
+	TrajectoryManager& operator=(TrajectoryManager&& rhs);
+
+	void add(trajectory_t& x, trajectory_t& y, trajectory_t& z, float flight_time);
 	void clear();
 	void get_trajectory(int index, trajectory_t& x, trajectory_t& y, trajectory_t& z);
 	void print_list();

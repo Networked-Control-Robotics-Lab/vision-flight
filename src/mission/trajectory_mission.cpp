@@ -19,12 +19,13 @@ void TrajectoryManager::send_mavlink_msg_to_serial(mavlink_message_t *msg)
 	serial_puts((char *)buf, len);
 }
 
-void TrajectoryManager::add(trajectory_t& x, trajectory_t& y, trajectory_t& z)
+void TrajectoryManager::add(trajectory_t& x, trajectory_t& y, trajectory_t& z, float flight_time)
 {
 	trajectory3d_t traj3d;
 	traj3d.x = x;
 	traj3d.y = y;
 	traj3d.z = z;
+	traj3d.flight_time = flight_time;
 	this->trajs.push_back(traj3d); 
 }
 
@@ -40,13 +41,13 @@ void TrajectoryManager::get_trajectory(int index, trajectory_t& x, trajectory_t&
 	z = this->trajs.at(index).z;
 }
 
-void TrajectoryManager::print_trajectory(float *traj_coeff, int coeff_size)
+void TrajectoryManager::print_trajectory(float *coeff, int coeff_size)
 {
 	for(int i = 0; i < coeff_size; i++) {
 		if(i == (coeff_size - 1)) {
-			printf("%f\n\r", traj_coeff[i]);
+			printf("%f\n\r", coeff[i]);
 		} else {
-			printf("%f, ", traj_coeff[i]);
+			printf("%f, ", coeff[i]);
 		}
 	}
 }
@@ -55,32 +56,13 @@ void TrajectoryManager::print_list()
 {
 	for(int i = 0; i < this->trajs.size(); i++) {
 		/* position */
-		printf("trajectory #%d:\n\r"
-                       "position coefficients:\n\r"
+		printf("trajectory coefficients#%d:\n\r"
 		       "x: ", i);
-		print_trajectory(this->trajs.at(i).x.pos_coeff, 8);
+		print_trajectory(this->trajs.at(i).x.coeff, 8);
 		printf("y: ");
-		print_trajectory(this->trajs.at(i).y.pos_coeff, 8);
+		print_trajectory(this->trajs.at(i).y.coeff, 8);
 		printf("z: ");
-		print_trajectory(this->trajs.at(i).z.pos_coeff, 8);
-
-		/* velocity */
-		printf("velocity coefficients:\n\r"
-                       "x: ");
-		print_trajectory(this->trajs.at(i).x.vel_coeff, 7);
-		printf("y: ");
-		print_trajectory(this->trajs.at(i).y.vel_coeff, 7);
-		printf("z: ");
-		print_trajectory(this->trajs.at(i).z.vel_coeff, 7);
-
-		/* acceleration */
-		printf("acceleration coefficients:\n\r"
-                       "x: ");
-		print_trajectory(this->trajs.at(i).x.accel_coeff, 6);
-		printf("y: ");
-		print_trajectory(this->trajs.at(i).y.accel_coeff, 6);
-		printf("z: ");
-		print_trajectory(this->trajs.at(i).z.accel_coeff, 6);
+		print_trajectory(this->trajs.at(i).z.coeff, 8);
 
 		printf("---\n\r");
 	}
@@ -130,28 +112,93 @@ bool TrajectoryManager::send_traj_write_and_wait_ack()
 	return false;
 }
 
+bool TrajectoryManager::send_traj_item_and_wait_ack(uint8_t index, uint8_t type)
+{
+	float *traj_coeff;
+	float flight_time = this->trajs.at(index).flight_time;
+
+	string s;
+	switch(type) {
+	case TRAJECTORY_TYPE_X:
+		s = "x";
+		traj_coeff = this->trajs.at(index).x.coeff;
+		break;
+	case TRAJECTORY_TYPE_Y:
+		s = "y";
+		traj_coeff = this->trajs.at(index).y.coeff;
+		break;
+	case TRAJECTORY_TYPE_Z:
+		s = "z";
+		traj_coeff = this->trajs.at(index).z.coeff;
+		break;
+	}
+
+	int trial = 10;
+	do {
+		printf("mavlink: [#%d] send %s trajectory.\n\r", index, s.c_str());
+
+		mavlink_message_t msg;
+		mavlink_msg_polynomial_trajectory_item_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id,
+                                                                 0, type, index, traj_coeff, flight_time);
+		send_mavlink_msg_to_serial(&msg);
+
+		bool ack_recvd = wait_trajectory_ack();
+		if(ack_recvd == true) {
+			printf("succeeded.\n\r");
+			return true;
+		} else {
+			printf("timeout!\n\r");
+		}
+	} while(--trial);
+
+	printf("polynomial trajectory item sending failed.\n\r");
+
+	return false;
+}
+
 bool TrajectoryManager::send()
 {
 	if(this->trajs.size() == 0) {
 		return true;
 	}
 
-	bool succeed;
+	bool succeed = true;
 
 	/* create mavlink message reception thread */
 	std::thread thread_mavlink_rx(&TrajectoryManager::mavlink_rx_thread_entry, this);
 
 	/* handshake step */
-	succeed = send_traj_write_and_wait_ack();
+	if(send_traj_write_and_wait_ack() == false) {
+		this->stop_mavlink_rx_thread = true;
+		thread_mavlink_rx.join();
+		return false;
+	}
+	
+	/* trajectories sending step */
+	for(int i = 0; i < this->trajs.size(); i++) {
+		succeed = send_traj_item_and_wait_ack(i, TRAJECTORY_TYPE_X);
+		if(succeed == false) {
+			break;
+		}
 
-	/* waypoints sending step */
+		succeed = send_traj_item_and_wait_ack(i, TRAJECTORY_TYPE_Y);
+		if(succeed == false) {
+			break;
+		}
+
+		if(this->z_enabled == true) {
+			succeed = send_traj_item_and_wait_ack(i, TRAJECTORY_TYPE_Z);
+			if(succeed == false) {
+				break;
+			}		
+		}
+	}
 
 	/* stop and kill the thread */
 	this->stop_mavlink_rx_thread = true;
 	thread_mavlink_rx.join();
 
 	return succeed;
-
 }
 
 void TrajectoryManager::mavlink_rx_message_handler(mavlink_message_t& msg)
