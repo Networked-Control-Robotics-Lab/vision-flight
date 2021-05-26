@@ -60,28 +60,38 @@ float calculate_image_gradient_strength(cv::Mat& gradient_img)
 	return gradient_strength;
 }
 
-void scan_best_camera_exposure(ROSCamDev& ros_cam_dev, int max_exp, int delta)
+void scan_best_camera_exposure(ROSCamDev& ros_cam_dev, int max_exp, bool debug_on)
 {
+	int sleep_time = 150000; //minimum delay = 1/30s (~33333us)
+
 	cv::Mat raw_img, gradient_img;
 
 	float max_grad_val = 0, curr_grad_val = 0;
-	int best_exp = 0;
+	int exp = 0, best_exp = 0;
 
+	/* initial trial */
 	arducam_ros_exposure_ctrl(0);
 	ros_cam_dev.read(raw_img);	
-
+	usleep(sleep_time);
 	generate_gradient_image(raw_img, gradient_img);
 	max_grad_val = calculate_image_gradient_strength(gradient_img);
 
-	for(int exp = delta; exp <= max_exp; exp += delta) {
+	/* course adjustment */
+	int delta = (max_exp - 0) / 10;
+	for(int i = 1; i <= 10; i++) {
+		exp += delta;
+
 		arducam_ros_exposure_ctrl(exp);
-		usleep(100000); //minimum delay = 1/30s (~33333us)
+		usleep(sleep_time);
 
 		ros_cam_dev.read(raw_img);
 
 		generate_gradient_image(raw_img, gradient_img);
 		curr_grad_val = calculate_image_gradient_strength(gradient_img);
-		printf("exposure = %d, gradient value = %f\n\r", exp, curr_grad_val);
+
+		if(debug_on) {
+			printf("exposure = %d, gradient value = %f\n\r", exp, curr_grad_val);
+		}
 
 		if(curr_grad_val > max_grad_val) {
 			best_exp = exp;
@@ -90,7 +100,49 @@ void scan_best_camera_exposure(ROSCamDev& ros_cam_dev, int max_exp, int delta)
 	}
 
 	arducam_ros_exposure_ctrl(best_exp);
-	printf("best exposure value =  %d\n\r", best_exp);
+	if(debug_on) {
+		printf("course tuned best exposure value =  %d\n\r", best_exp);
+	}
+
+	/* fine adjustment */
+	int search_range = delta * 3;
+	int search_start, search_end;
+
+	if(best_exp + (search_range / 2) > max_exp) {
+		search_start = max_exp - search_range;
+		search_end = max_exp;
+	} else if(best_exp - (search_range / 2) < 0) {
+		search_start = 0;
+		search_end = search_range;
+	} else {
+		search_start = best_exp - (search_range / 2);
+		search_end = best_exp + (search_range / 2);
+	}
+
+	delta = search_range / 50;
+	for(exp = search_start; exp < search_end; exp += delta) {
+		arducam_ros_exposure_ctrl(exp);
+		usleep(sleep_time);
+
+		ros_cam_dev.read(raw_img);
+
+		generate_gradient_image(raw_img, gradient_img);
+		curr_grad_val = calculate_image_gradient_strength(gradient_img);
+
+		if(debug_on) {
+			printf("exposure = %d, gradient value = %f\n\r", exp, curr_grad_val);
+		}
+
+		if(curr_grad_val > max_grad_val) {
+			best_exp = exp;
+			max_grad_val = curr_grad_val;
+		}
+	}
+
+	arducam_ros_exposure_ctrl(best_exp);
+	if(debug_on) {
+		printf("fine tuned best exposure value =  %d\n\r", best_exp);
+	}
 }
 
 void camera_exposure_test()
@@ -129,7 +181,7 @@ void apriltag_thread_entry(void)
 {
 	ROSCamDev ros_cam_dev("/arducam/camera/image_raw");
 
-	scan_best_camera_exposure(ros_cam_dev, 10000, 1000);
+	scan_best_camera_exposure(ros_cam_dev, 10000, true);
 
 
 	/* camera initialization */
