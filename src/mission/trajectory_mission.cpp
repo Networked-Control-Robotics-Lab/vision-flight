@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "trajectory_mission.hpp"
 #include "sys_time.hpp"
+#include "mission_manager.hpp"
 
 extern "C" {
 #include "../lib/mavlink_v2/ncrl_mavlink/mavlink.h"
@@ -94,7 +95,7 @@ bool TrajectoryManager::wait_trajectory_ack()
 
 bool TrajectoryManager::send_traj_write_and_wait_ack()
 {
-	int trial = 10;
+	int trial = RETRY_TIME_MAX;
 	do {
 		printf("mavlink: send polynomial trajectory write message. (handshacking)\n\r");
 
@@ -139,7 +140,7 @@ bool TrajectoryManager::send_traj_item_and_wait_ack(uint8_t index, uint8_t type)
 		break;
 	}
 
-	int trial = 10;
+	int trial = RETRY_TIME_MAX;
 	do {
 		printf("mavlink: [#%d] send %s trajectory.\n\r", index, s.c_str());
 

@@ -4,6 +4,8 @@
 #include "waypoint_mission.hpp"
 #include "trajectory_mission.hpp"
 
+#define RETRY_TIME_MAX 5
+
 class MissionManager {
 	private:
 	int serial_fd;

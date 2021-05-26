@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "waypoint_mission.hpp"
 #include "sys_time.hpp"
+#include "mission_manager.hpp"
 
 extern "C" {
 #include "../lib/mavlink_v2/ncrl_mavlink/mavlink.h"
@@ -101,7 +102,7 @@ bool WaypointManager::wait_mission_ack()
 
 bool WaypointManager::send_mission_count_and_wait_ack()
 {
-	int trial = 10;
+	int trial = RETRY_TIME_MAX;
 	do {
 		printf("mavlink: send mission count message. (handshacking)\n\r");
 
@@ -145,7 +146,7 @@ bool WaypointManager::send_mission_waypoint(int index, bool is_last_waypoint)
 	get_waypoint(index, waypoint);
 
 	bool recvd_ack = false;
-	int trial = 10;
+	int trial = RETRY_TIME_MAX;
        	do {
 		/* send requested waypoint */
 		printf("mavlink: send waypoint #%d\n\r", index);
