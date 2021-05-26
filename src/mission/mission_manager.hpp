@@ -25,7 +25,9 @@ class MissionManager {
 
 	void launch_mavlink_listener()
 	{
-		this->thread_mavlink_rx = new std::thread(&MissionManager::mavlink_rx_thread_entry, std::ref(*this));
+		if(this->thread_mavlink_rx == nullptr) {
+			this->thread_mavlink_rx = new std::thread(&MissionManager::mavlink_rx_thread_entry, std::ref(*this));
+		}
 	}
 
 	~MissionManager()
@@ -37,21 +39,45 @@ class MissionManager {
 	}
 
 	//copy constructor
-	MissionManager(MissionManager const& rhs): serial_fd(rhs.serial_fd),
-                                                   thread_mavlink_rx(rhs.thread_mavlink_rx),
-                                                   waypoint(rhs.waypoint),
-                                                   trajectory(rhs.trajectory) {}
+	MissionManager(MissionManager const& rhs)
+	{
+		/* error of copy constructing with thread running */
+		if(rhs.thread_mavlink_rx != nullptr) {
+			printf("[MissionManager] error: you are copy constructing a object which contains a running thread.\n\r");
+			exit(-1);
+		}
+
+		serial_fd = rhs.serial_fd;
+		thread_mavlink_rx = rhs.thread_mavlink_rx;
+		waypoint = rhs.waypoint;
+		trajectory = rhs.trajectory;
+	}
 
 	//move constructor
-	MissionManager(MissionManager&& rhs): serial_fd(std::move(rhs.serial_fd)),
-                                              thread_mavlink_rx(std::move(rhs.thread_mavlink_rx)),
-                                              waypoint(std::move(rhs.waypoint)),
-                                              trajectory(std::move(rhs.trajectory)) {}
+	MissionManager(MissionManager&& rhs)
+	{
+		/* error of move constructing with thread running */
+		if(rhs.thread_mavlink_rx != nullptr) {
+			printf("[MissionManager] error: you are move constructing a object which contains a running thread.\n\r");
+			exit(-1);
+		}
+
+		std::swap(serial_fd, rhs.serial_fd);
+		std::swap(thread_mavlink_rx, rhs.thread_mavlink_rx);
+		std::swap(waypoint, rhs.waypoint);
+		std::swap(trajectory, rhs.trajectory);
+	}
 
 	//copy assignment
 	MissionManager& operator=(MissionManager const& rhs)
 	{
 		if(this != &rhs) {
+			/* error of move constructing with thread running */
+			if(rhs.thread_mavlink_rx != nullptr) {
+				printf("[MissionManager] error: you are copy assigning a object which contains a running thread.\n\r");
+				exit(-1);
+			}
+
 			serial_fd = rhs.serial_fd;
 			thread_mavlink_rx = rhs.thread_mavlink_rx;
 			waypoint = rhs.waypoint;
@@ -64,6 +90,12 @@ class MissionManager {
 	MissionManager& operator=(MissionManager&& rhs)
 	{
 		if(this != &rhs) {
+			/* error of move constructing with thread running */
+			if(rhs.thread_mavlink_rx != nullptr) {
+				printf("[MissionManager] error: you are move assigning a object which contains a running thread.\n\r");
+				exit(-1);
+			}
+
 			std::swap(serial_fd, rhs.serial_fd);
 			std::swap(thread_mavlink_rx, rhs.thread_mavlink_rx);
 			std::swap(waypoint, rhs.waypoint);

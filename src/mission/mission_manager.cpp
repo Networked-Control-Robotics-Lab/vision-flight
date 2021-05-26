@@ -57,17 +57,13 @@ void MissionManager::open_serial_port(string& port_name, int baudrate)
 }
 
 MissionManager::MissionManager(int target_id, string serial_port, int baudrate,
-                               int frame, bool traj_z_enabled)
+                               int frame, bool traj_z_enabled): thread_mavlink_rx(nullptr)
 {
 	open_serial_port(serial_port, baudrate);
 
 	/* intialize waypoint manager and trajectory manager */
 	this->waypoint = WaypointManager(target_id, frame, this->serial_fd);
 	this->trajectory = TrajectoryManager(target_id, traj_z_enabled, this->serial_fd);
-
-	/* create mavlink message reception thread */
-	//this->thread_mavlink_rx = new std::thread(&MissionManager::mavlink_rx_thread_entry, std::ref(*this));
-	//printf("origin fd ptr %x %d\n\r", &this->serial_fd, serial_fd);
 }
 
 void MissionManager::mavlink_rx_thread_entry()
