@@ -5,6 +5,7 @@
 #include "shell_thread.hpp"
 #include "ros_thread.hpp"
 #include "mission_manager.hpp"
+#include "vins_mono_bridge.hpp"
 
 using namespace std;
 
@@ -15,6 +16,11 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "vafs");
 	ros::Time::init();
 
+	/* launch vins-mono bridge */
+	//VINSMonoBridge vins_mono_bridge("/dev/ttyUSB0", 115200);
+	//vins_mono_bridge.launch_imu_message_listener();
+
+	/* launch mission manager */
 	mission_manager = MissionManager(1, "/dev/ttyUSB0", 115200, WAYPOINT_CARTESIAN_FRAME, false);
 	mission_manager.launch_mavlink_listener();
 
