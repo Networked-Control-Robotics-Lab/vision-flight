@@ -76,6 +76,7 @@ set(SRC
     ./src/shell/shell_cmds.cpp
     ./src/camera_dev/ros_cam.cpp
     ./src/camera_dev/arducam_ros_ctrl.cpp
+    ./src/camera_dev/exposure_ctrl.cpp
     ./src/mission/waypoint_mission.cpp
     ./src/mission/trajectory_mission.cpp
     ./src/mission/mission_manager.cpp
