@@ -10,6 +10,7 @@ class MissionManager {
 	private:
 	int serial_fd;
 	std::thread *thread_mavlink_rx;
+	bool kill_thread_signal;
 
 	void open_serial_port(string& port_name, int baudrate);
 	int serial_getc(char *c);
@@ -19,7 +20,7 @@ class MissionManager {
 	WaypointManager waypoint;
 	TrajectoryManager trajectory;
 
-	MissionManager(): thread_mavlink_rx(nullptr) {};
+	MissionManager(): thread_mavlink_rx(nullptr), kill_thread_signal(false) {};
 	MissionManager(int target_id, string serial_port, int baudrate,
                        int frame, bool traj_z_enabled);
 
@@ -33,6 +34,7 @@ class MissionManager {
 	~MissionManager()
 	{
 		if(this->thread_mavlink_rx != nullptr) {
+			kill_thread_signal = true;
 			thread_mavlink_rx->join();
 			delete thread_mavlink_rx;
 		}
@@ -51,6 +53,7 @@ class MissionManager {
 		thread_mavlink_rx = rhs.thread_mavlink_rx;
 		waypoint = rhs.waypoint;
 		trajectory = rhs.trajectory;
+		kill_thread_signal = rhs.kill_thread_signal;
 	}
 
 	//move constructor
@@ -66,6 +69,7 @@ class MissionManager {
 		std::swap(thread_mavlink_rx, rhs.thread_mavlink_rx);
 		std::swap(waypoint, rhs.waypoint);
 		std::swap(trajectory, rhs.trajectory);
+		std::swap(kill_thread_signal, rhs.kill_thread_signal);
 	}
 
 	//copy assignment
@@ -82,6 +86,7 @@ class MissionManager {
 			thread_mavlink_rx = rhs.thread_mavlink_rx;
 			waypoint = rhs.waypoint;
 			trajectory = rhs.trajectory;
+			kill_thread_signal = rhs.kill_thread_signal;
 		}
 		return *this;
 	}
@@ -100,6 +105,7 @@ class MissionManager {
 			std::swap(thread_mavlink_rx, rhs.thread_mavlink_rx);
 			std::swap(waypoint, rhs.waypoint);
 			std::swap(trajectory, rhs.trajectory);
+			std::swap(kill_thread_signal, rhs.kill_thread_signal);
 		}
 		return *this;
 	}

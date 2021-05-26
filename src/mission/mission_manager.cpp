@@ -57,7 +57,7 @@ void MissionManager::open_serial_port(string& port_name, int baudrate)
 }
 
 MissionManager::MissionManager(int target_id, string serial_port, int baudrate,
-                               int frame, bool traj_z_enabled): thread_mavlink_rx(nullptr)
+                               int frame, bool traj_z_enabled): thread_mavlink_rx(nullptr), kill_thread_signal(false)
 {
 	open_serial_port(serial_port, baudrate);
 
@@ -74,7 +74,7 @@ void MissionManager::mavlink_rx_thread_entry()
 
 	char c;
 
-	while(1) {
+	while(this->kill_thread_signal == false) {
 		/* receive the message */
 		if(serial_getc(&c) != -1) {
 			//printf("%c", c);
