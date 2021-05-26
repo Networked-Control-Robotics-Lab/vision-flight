@@ -20,7 +20,7 @@ int MissionManager::serial_getc(char *c)
 void MissionManager::open_serial_port(string& port_name, int baudrate)
 {
 	//open the port
-	this->serial_fd = open(port_name.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
+	this->serial_fd = open(port_name.c_str(), O_RDWR | O_NOCTTY/* | O_NONBLOCK*/);
 
 	if(this->serial_fd == -1) {
 		ROS_FATAL("Failed to open the serial port.");
