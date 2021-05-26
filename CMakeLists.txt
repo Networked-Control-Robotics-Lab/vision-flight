@@ -35,7 +35,8 @@ set(INC
     ./src/shell
     ./src/apriltag
     ./src/mission
-    ./src/common)
+    ./src/common
+    ./src/vins_mono_bridge)
 
 set(APRILTAG_SRC
     ./src/lib/apriltag/apriltag.c
@@ -84,6 +85,7 @@ set(SRC
     ./src/threads/shell_thread.cpp
     ./src/threads/apriltag_thread.cpp
     ./src/common/sys_time.cpp
+    ./src/vins_mono_bridge/vins_mono_bridge.cpp
     ./src/main.cpp)
 
 add_executable(core ${SRC})
