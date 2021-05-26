@@ -3,6 +3,7 @@
 #include "apriltag_utils.hpp"
 #include "ros_cam.hpp"
 #include "arducam_ros_ctrl.hpp"
+#include "sys_time.hpp"
 
 extern "C" {
 #include "apriltag.h"
@@ -21,10 +22,105 @@ extern "C" {
 using namespace std;
 using namespace cv;
 
+void generate_gradient_image(cv::Mat& frame, cv::Mat& gradient)
+{
+        int kernel_size = 3;
+        int scale = 1;
+        int ddepth = CV_16S;
+        int delta = 0;
+
+	cv::Mat gray, gradient16;
+
+	GaussianBlur(frame, frame, Size(3, 3), 0, 0, BORDER_DEFAULT );
+	cvtColor(frame, gray, COLOR_BGR2GRAY);
+	Laplacian(gray, gradient16, ddepth, kernel_size, scale, delta, BORDER_DEFAULT);
+	convertScaleAbs(gradient16, gradient);
+
+	imshow("gray", gray);
+	imshow("gradient", gradient);
+	waitKey(1);
+}
+
+float calculate_image_gradient_strength(cv::Mat& image)
+{
+	float rescale = 1.0f / (image.size().width * image.size().height);
+	float gradient_strength = 0;
+
+	for(int r = 0; r < image.size().width; r++) {
+		for(int c = 0; c < image.size().height; c++) {
+			gradient_strength += image.at<uint8_t>(r, c, 0) / 256.0f;
+		}
+	}
+	gradient_strength *= rescale;
+
+	return gradient_strength;
+}
+
+void scan_best_camera_exposure(ROSCamDev& ros_cam_dev, int exposure_max, int exposure_increment)
+{
+	cv::Mat frame, gradient;
+
+	float gradient_strength_max = 0, curr_gradient = 0;
+	int best_exposure = 0;
+
+	arducam_ros_exposure_ctrl(0);
+	ros_cam_dev.read(frame);	
+
+	generate_gradient_image(frame, gradient);
+	gradient_strength_max = calculate_image_gradient_strength(gradient);
+
+	for(int exposure = exposure_increment; exposure <= exposure_max; exposure += exposure_increment) {
+		arducam_ros_exposure_ctrl(exposure);
+
+		cv::Mat frame, gradient;
+		ros_cam_dev.read(frame);
+
+		sleep(1);
+
+		generate_gradient_image(frame, gradient);
+		curr_gradient = calculate_image_gradient_strength(gradient);
+		printf("curr gradient = %f\n\r", curr_gradient);
+
+		if(curr_gradient > gradient_strength_max) {
+			best_exposure = exposure;
+			gradient_strength_max = curr_gradient;
+		}
+	}
+
+	arducam_ros_exposure_ctrl(best_exposure);
+	printf("best exposure: %f\n\r", best_exposure);
+}
+
+void camera_exposure_test(ROSCamDev& ros_cam_dev)
+{
+	static int exp = 0, sign = 1;
+
+	cv::Mat frame, gradient;
+
+	generate_gradient_image(frame, gradient);
+	calculate_image_gradient_strength(gradient);
+
+	exp += sign * 1000;
+
+	if(exp <= 0) {
+		exp = 0;
+		sign *= -1;
+	}
+
+	if(exp >= 10000) {
+		exp = 10000;
+		sign *= -1;
+	}
+
+	arducam_ros_exposure_ctrl(exp);
+}
+
 void apriltag_thread_entry(void)
 {
 	ROSCamDev ros_cam_dev("/arducam/camera/image_raw");
-	arducam_ros_exposure_ctrl(0x1000);
+
+	scan_best_camera_exposure(ros_cam_dev, 10000, 1000);
+
 
 	/* camera initialization */
 	//VideoCapture camera(0);
@@ -64,9 +160,22 @@ void apriltag_thread_entry(void)
 	tag_info.cx = cx;
 	tag_info.cy = cy;
 
-	Mat frame, gray;
+	float start_time = get_sys_time_s();
+	float curr_time;
+
+	int kernel_size = 3;
+	int scale = 1;
+	int ddepth = CV_16S;
+	int delta = 0;
+	Mat frame, gray, gradient;
 	while (true) {
 		ros_cam_dev.read(frame);
+
+//		generate_gradient_image(frame, gradient);
+//		calculate_image_gradient_strength(gradient);
+//		camera_exposure_ctrl();
+
+//		continue;
 
 		//camera >> frame;
 		cvtColor(frame, gray, COLOR_BGR2GRAY);
