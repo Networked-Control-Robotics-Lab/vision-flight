@@ -75,7 +75,7 @@ void scan_best_camera_exposure(ROSCamDev& ros_cam_dev, int max_exp, int delta)
 
 	for(int exp = delta; exp <= max_exp; exp += delta) {
 		arducam_ros_exposure_ctrl(exp);
-		sleep(1);
+		usleep(100000); //minimum delay = 1/30s (~33333us)
 
 		ros_cam_dev.read(raw_img);
 
