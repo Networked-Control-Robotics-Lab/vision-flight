@@ -25,10 +25,9 @@ using namespace cv;
 
 void apriltag_thread_entry(void)
 {
+	scan_best_camera_exposure(5000, true);
+
 	ROSCamDev ros_cam_dev("/arducam/camera/image_raw");
-
-	scan_best_camera_exposure(ros_cam_dev, 10000, true);
-
 
 	/* camera initialization */
 	//VideoCapture camera(0);

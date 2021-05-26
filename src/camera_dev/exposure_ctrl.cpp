@@ -14,30 +14,32 @@ void generate_gradient_image(cv::Mat& raw_img, cv::Mat& gradient_img)
         int desired_depth = CV_16S;
         int delta = 0;
 
-	cv::Mat gray_img, gradient16_img;
+	cv::Mat gaussian_img, gray_img, gradient16_img;
 
-	cv::GaussianBlur(raw_img, raw_img, Size(3, 3), 0, 0, BORDER_DEFAULT );
-	cv::cvtColor(raw_img, gray_img, COLOR_BGR2GRAY);
+	cv::GaussianBlur(raw_img, gaussian_img, Size(3, 3), 0, 0, BORDER_DEFAULT);
+	cv::cvtColor(gaussian_img, gray_img, COLOR_BGR2GRAY);
 	cv::Laplacian(gray_img, gradient16_img, desired_depth, kernel_size, scale, delta, BORDER_DEFAULT);
 	cv::convertScaleAbs(gradient16_img, gradient_img);
 
+#if 0
 	imshow("raw image", raw_img);
 	imshow("gray image", gray_img);
 	imshow("laplacian image", gradient_img);
 	waitKey(1);
+#endif
 }
 
 float calculate_image_gradient_strength(cv::Mat& gradient_img)
 {
-	int img_row = gradient_img.size().width;
-	int img_col = gradient_img.size().height;
+	int img_row = gradient_img.size().height;
+	int img_col = gradient_img.size().width;
 
 	float rescale = 1.0f / (img_row * img_col);
 	float gradient_strength = 0;
 
 	for(int r = 0; r < img_row; r++) {
 		for(int c = 0; c < img_col; c++) {
-			gradient_strength += gradient_img.at<uint8_t>(r, c, 0) / 256.0f;
+			gradient_strength += gradient_img.at<uint8_t>(r, c) / 256.0f;
 		}
 	}
 	gradient_strength *= rescale;
@@ -45,8 +47,10 @@ float calculate_image_gradient_strength(cv::Mat& gradient_img)
 	return gradient_strength;
 }
 
-void scan_best_camera_exposure(ROSCamDev& ros_cam_dev, int max_exp, bool debug_on)
+void scan_best_camera_exposure(int max_exp, bool debug_on)
 {
+	ROSCamDev ros_cam_dev("/arducam/camera/image_raw");
+
 	int sleep_time = 150000; //minimum delay = 1/30s (~33333us)
 
 	cv::Mat raw_img, gradient_img;

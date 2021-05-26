@@ -10,6 +10,7 @@
 #include "waypoint_mission.hpp"
 #include "trajectory_mission.hpp"
 #include "mission_manager.hpp"
+#include "exposure_ctrl.hpp"
 
 using namespace std;
 
@@ -34,6 +35,11 @@ void shell_cmd_quit(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int par
 {
 	system("/bin/stty cooked echo");
 	exit(0);
+}
+
+void shell_cmd_exposure(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
+{
+	scan_best_camera_exposure(5000, true);
 }
 
 void shell_cmd_waypoint(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
