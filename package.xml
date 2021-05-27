@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>vafs</name>
+  <name>vision_flight</name>
   <version>0.0.1</version>
-  <description>vision-assisted-flight-stack (vafs) is a top level guidance software for ncrl-flight-control</description>
+  <description>vision-assisted-flight-stack (vision_flight) is a top level guidance software for ncrl-flight-control</description>
 
   <maintainer email="shengwen1997.tw@gmail.com">Shengwen Cheng</maintainer>
 
