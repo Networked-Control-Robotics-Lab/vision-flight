@@ -156,7 +156,7 @@ bool VINSMonoBridge::imu_message_decode(sensor_msgs::Imu& imu_msg)
                                                           IMU_SERIAL_MSG_SIZE - 3);
 		if(checksum != recvd_checksum) {
 			/* checksum error */
-			return false; 
+			return false; //TODO: count checksum error times 
 		}
 
 		/* decode package */
@@ -182,9 +182,11 @@ bool VINSMonoBridge::imu_message_decode(sensor_msgs::Imu& imu_msg)
  		imu_msg.linear_acceleration_covariance={8.999999999999999e-08, 0.0, 0.0,
                                                         0.0, 8.999999999999999e-08, 0.0,
                                                         0.0, 0.0, 8.999999999999999e-08};
+
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 void VINSMonoBridge::launch_imu_message_listener()
@@ -204,6 +206,8 @@ void VINSMonoBridge::serial_tx_thread_entry()
 
 	while(this->kill_thread_signal == false) {
 		if(serial_getc(&c) != -1) {
+			imu_msg_buf_push(c);
+
 			if(imu_message_decode(imu_msg) == true) {
 				imu_publisher.publish(imu_msg);
 			}
