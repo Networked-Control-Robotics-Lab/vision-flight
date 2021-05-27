@@ -29,7 +29,7 @@ void shell_thread_entry()
 
 	/* init shell cli */
 	struct shell_struct shell;
-	shell_init_struct(&shell, "vafs > ");
+	shell_init_struct(&shell, "vision-flight > ");
 
 	/* init shell parser */
 	int shell_cmd_cnt = SIZE_OF_SHELL_CMD_LIST(shell_cmd_list);
