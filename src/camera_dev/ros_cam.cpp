@@ -32,3 +32,9 @@ void ROSCamDev::read(cv::Mat& ret)
 
 	cv_img_queue.pop();
 }
+
+void ROSCamDev::clear()
+{
+	queue<cv::Mat> empty;
+	std::swap(cv_img_queue, empty);
+}

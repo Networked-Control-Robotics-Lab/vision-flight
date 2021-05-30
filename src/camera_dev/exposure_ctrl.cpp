@@ -60,8 +60,9 @@ int scan_best_camera_exposure(int max_exp, bool debug_on)
 
 	/* initial trial */
 	arducam_ros_exposure_ctrl(0);
-	ros_cam_dev.read(raw_img);	
 	usleep(sleep_time);
+	ros_cam_dev.clear(); //make sure we are not using the old data in buffer
+	ros_cam_dev.read(raw_img);	
 	generate_gradient_image(raw_img, gradient_img);
 	max_grad_val = calculate_image_gradient_strength(gradient_img);
 
@@ -73,6 +74,7 @@ int scan_best_camera_exposure(int max_exp, bool debug_on)
 		arducam_ros_exposure_ctrl(exp);
 		usleep(sleep_time);
 
+		ros_cam_dev.clear();
 		ros_cam_dev.read(raw_img);
 
 		generate_gradient_image(raw_img, gradient_img);
@@ -113,6 +115,7 @@ int scan_best_camera_exposure(int max_exp, bool debug_on)
 		arducam_ros_exposure_ctrl(exp);
 		usleep(sleep_time);
 
+		ros_cam_dev.clear();
 		ros_cam_dev.read(raw_img);
 
 		generate_gradient_image(raw_img, gradient_img);

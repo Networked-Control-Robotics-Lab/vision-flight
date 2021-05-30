@@ -35,5 +35,6 @@ class ROSCamDev
 
 	void cv_bridge_callback(const sensor_msgs::ImageConstPtr& msg);
 	void read(cv::Mat& ret);
+	void clear();
 };
 
