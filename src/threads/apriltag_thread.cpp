@@ -23,6 +23,14 @@ extern "C" {
 using namespace std;
 using namespace cv;
 
+cv::Mat adjust_contrast(cv::Mat& raw_img, double alpha, double beta)
+{
+	cv::Mat contrast_img;
+	raw_img.convertTo(contrast_img, -1, alpha, beta);
+
+	return std::move(contrast_img);
+}
+
 void apriltag_thread_entry(void)
 {
 	scan_best_camera_exposure(5000, false);
@@ -70,12 +78,14 @@ void apriltag_thread_entry(void)
 	float start_time = get_sys_time_s();
 	float curr_time;
 
-	Mat raw_img, gray, gradient;
+	Mat raw_img, gray, gradient, contrast_img;
 	while (true) {
 		ros_cam_dev.read(raw_img);
 
+		contrast_img = adjust_contrast(raw_img,  2, 0);
+
 		//camera >> raw_img;
-		cvtColor(raw_img, gray, COLOR_BGR2GRAY);
+		cvtColor(contrast_img, gray, COLOR_BGR2GRAY);
 
 		/* convert image data to apriltag's format */
 		image_u8_t im = {
