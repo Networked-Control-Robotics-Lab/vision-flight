@@ -35,6 +35,9 @@ void apriltag_thread_entry(void)
 {
 	ROSCamDev ros_cam_dev("/arducam/triggered/camera/image_raw");
 
+	ros::NodeHandle node("vision_flight");
+	ros::Publisher debug_img_publisher = node.advertise<sensor_msgs::Image>("debug_img", 20);
+
 	/* camera initialization */
 	//VideoCapture camera(0);
 	//camera.set(CV_CAP_PROP_FRAME_WIDTH, CAMERA_IMAGE_WIDTH);
@@ -108,10 +111,13 @@ void apriltag_thread_entry(void)
 			cout << "--------------------------------" << endl;
 		}
 
-		/* visualization with opencv */
+		/* visualization */
 		tags_visualize(raw_img, detections);
-		imshow("Tag Detections", raw_img);
-		waitKey(1); 
+
+		putText(raw_img, "Navigation invalid", Point(5, 20), FONT_HERSHEY_COMPLEX_SMALL, 1.0, Scalar(0, 0, 255));
+
+		sensor_msgs::ImagePtr debug_img_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", raw_img).toImageMsg();
+		debug_img_publisher.publish(debug_img_msg);
 
 		apriltag_detections_destroy(detections);
 	}
