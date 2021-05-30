@@ -111,9 +111,7 @@ void apriltag_thread_entry(void)
 		/* visualization with opencv */
 		tags_visualize(raw_img, detections);
 		imshow("Tag Detections", raw_img);
-		if (waitKey(30) >= 0) {
-			break;
-		}
+		waitKey(1); 
 
 		apriltag_detections_destroy(detections);
 	}
