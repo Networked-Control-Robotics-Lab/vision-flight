@@ -11,6 +11,7 @@ struct cmd_list_entry shell_cmd_list[] = {
 	DEF_SHELL_CMD(exit)
 	DEF_SHELL_CMD(quit)
 	DEF_SHELL_CMD(exposure)
+	DEF_SHELL_CMD(camera)
 	DEF_SHELL_CMD(waypoint)
 	DEF_SHELL_CMD(traj)
 	DEF_SHELL_CMD(mission)

@@ -11,6 +11,7 @@
 #include "trajectory_mission.hpp"
 #include "mission_manager.hpp"
 #include "exposure_ctrl.hpp"
+#include "arducam_ros_ctrl.hpp"
 
 using namespace std;
 
@@ -40,6 +41,20 @@ void shell_cmd_quit(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int par
 void shell_cmd_exposure(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
 {
 	scan_best_camera_exposure(5000, true);
+}
+
+void shell_cmd_camera(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
+
+{
+	if(param_cnt == 2) {
+		if(strcmp(param_list[1], "auto") == 0) {
+			printf("arducam: auto mode\n\r");
+			arducam_ros_auto_mode();
+		} else if(strcmp(param_list[1], "trigger") == 0) {
+			printf("arducam: trigger mode\n\r");
+			arducam_ros_trigger_mode();
+		}
+	}
 }
 
 void shell_cmd_waypoint(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
