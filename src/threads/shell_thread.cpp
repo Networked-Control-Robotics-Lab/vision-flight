@@ -20,7 +20,7 @@ struct cmd_list_entry shell_cmd_list[] = {
 void shell_greeting(void)
 {
 	char s[150];
-	sprintf(s, "firmware build time: %s %s\n\rtype `help' for help\n\r\n\r", __TIME__, __DATE__);
+	sprintf(s, "\n\rbuild time: %s %s\n\rtype `help' for help\n\r\n\r", __TIME__, __DATE__);
 	shell_puts(s);
 }
 
@@ -35,7 +35,6 @@ void shell_thread_entry()
 	/* init shell parser */
 	int shell_cmd_cnt = SIZE_OF_SHELL_CMD_LIST(shell_cmd_list);
 
-	shell_cls();
 	shell_greeting();
 
 	while(1) {

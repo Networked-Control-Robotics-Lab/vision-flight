@@ -47,7 +47,7 @@ float calculate_image_gradient_strength(cv::Mat& gradient_img)
 	return gradient_strength;
 }
 
-void scan_best_camera_exposure(int max_exp, bool debug_on)
+int scan_best_camera_exposure(int max_exp, bool debug_on)
 {
 	ROSCamDev ros_cam_dev("/arducam/triggered/camera/image_raw");
 
@@ -132,6 +132,8 @@ void scan_best_camera_exposure(int max_exp, bool debug_on)
 	if(debug_on) {
 		printf("fine tuned best exposure value =  %d\n\r", best_exp);
 	}
+
+	return best_exp;
 }
 
 void camera_exposure_test()

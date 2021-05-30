@@ -6,6 +6,7 @@
 #include "ros_thread.hpp"
 #include "mission_manager.hpp"
 #include "vins_mono_bridge.hpp"
+#include "exposure_ctrl.hpp"
 
 using namespace std;
 
@@ -26,6 +27,11 @@ int main(int argc, char **argv)
 	//mission_manager.launch_mavlink_listener();
 
 	std::thread thread_ros(ros_thread_entry);
+
+	printf("calibrating camera exposure value, please wait...\n");
+	int exp = scan_best_camera_exposure(5000, false);
+	printf("camera exposure value = %d\n", exp);
+
 	std::thread thread_apriltag(apriltag_thread_entry);
 	std::thread thread_shell(shell_thread_entry);
 

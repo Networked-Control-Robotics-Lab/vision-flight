@@ -33,8 +33,6 @@ cv::Mat adjust_contrast(cv::Mat& raw_img, double alpha, double beta)
 
 void apriltag_thread_entry(void)
 {
-	scan_best_camera_exposure(5000, false);
-
 	ROSCamDev ros_cam_dev("/arducam/triggered/camera/image_raw");
 
 	/* camera initialization */
