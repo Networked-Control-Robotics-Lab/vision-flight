@@ -49,7 +49,7 @@ float calculate_image_gradient_strength(cv::Mat& gradient_img)
 
 void scan_best_camera_exposure(int max_exp, bool debug_on)
 {
-	ROSCamDev ros_cam_dev("/cam0/arducam/triggered/camera/image_raw");
+	ROSCamDev ros_cam_dev("/arducam/triggered/camera/image_raw");
 
 	int sleep_time = 150000; //minimum delay = 1/30s (~33333us)
 
@@ -136,7 +136,7 @@ void scan_best_camera_exposure(int max_exp, bool debug_on)
 
 void camera_exposure_test()
 {
-	ROSCamDev ros_cam_dev("/cam0/arducam/triggered/camera/image_raw");
+	ROSCamDev ros_cam_dev("/arducam/triggered/camera/image_raw");
 
 	static int exp = 0, sign = 1;
 	int max_exp = 10000;

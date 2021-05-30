@@ -1,0 +1,4 @@
+<launch>
+	<!-- vision flight -->
+	<node name="$(anon name)" pkg="vision_flight" type="core" output="screen" />
+</launch>

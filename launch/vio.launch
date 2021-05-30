@@ -6,7 +6,7 @@
         <arg name="vertical_flip" value="false" />
         <arg name="frame_id" value="cam0" />
 
-        <node name="arducam_ros_node" pkg="arducam_usb2_ros" type="arducam_ros_node.py" output="log">
+        <node name="arducam_ros_node" pkg="arducam_usb2_ros" type="arducam_trigger_ros_node.py" output="log">
             <param name="config_file" value="$(find arducam_usb2_ros)/camera_config_files/$(arg camera_config)" />
             <param name="camera_serial" value="$(arg serial_number)" />
             <param name="horizontal_flip" value="$(arg horizontal_flip)" />
@@ -35,7 +35,4 @@
             <param name="config_file" type="string" value="$(arg config_path)" />
             <param name="vins_folder" type="string" value="$(arg vins_path)" />
         </node>
-
-	<!-- vision flight -->
-	<node name="$(anon name)" pkg="vision_flight" type="core" output="screen" />
 </launch>
