@@ -2,9 +2,10 @@
 
 #include <string>
 #include <thread>
-#include "ros/ros.h"
-#include "sensor_msgs/Imu.h"
-#include "std_msgs/Int32.h"
+#include <ros/ros.h>
+#include <sensor_msgs/Imu.h>
+#include <std_msgs/Int32.h>
+#include <nav_msgs/Odometry.h>
 
 using namespace std;
 
@@ -35,7 +36,6 @@ class VINSMonoBridge {
 	int serial_getc(char *c);
 	void serial_puts(char *s, size_t size);
 	uint8_t generate_checksum_byte(uint8_t init_val, uint8_t *payload, int payload_count);
-	void send_pose_to_serial(float* pos, float* vel, float* q);
 	void imu_msg_buf_push(uint8_t c);
 	bool imu_message_decode(sensor_msgs::Imu& imu_msg);
 	void serial_tx_thread_entry();
@@ -71,4 +71,5 @@ class VINSMonoBridge {
 	VINSMonoBridge& operator=(VINSMonoBridge&& rhs) = delete;
 
 	void launch_imu_message_listener();
+	void send_pose_to_serial(nav_msgs::Odometry& ros_msg);
 };

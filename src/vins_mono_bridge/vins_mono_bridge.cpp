@@ -7,9 +7,10 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <inttypes.h>
-#include "ros/ros.h"
-#include "sensor_msgs/Imu.h"
-#include "std_msgs/Int32.h"
+#include <nav_msgs/Odometry.h>
+#include <ros/ros.h>
+#include <sensor_msgs/Imu.h>
+#include <std_msgs/Int32.h>
 #include "vins_mono_bridge.hpp"
 
 #define DRONE_ID 1
@@ -74,7 +75,7 @@ uint8_t VINSMonoBridge::generate_checksum_byte(uint8_t init_val, uint8_t *payloa
 	return result;
 }
 
-void VINSMonoBridge::send_pose_to_serial(float* pos, float* vel, float* q)
+void VINSMonoBridge::send_pose_to_serial(nav_msgs::Odometry& ros_msg)
 {
 	char msg_buf[VINS_MONO_SERIAL_MSG_SIZE] = {0};
 	int msg_pos = 0;
@@ -92,29 +93,29 @@ void VINSMonoBridge::send_pose_to_serial(float* pos, float* vel, float* q)
 
 	/* pack payloads */
 	//position (enu frame)
-	memcpy(msg_buf + msg_pos, &pos[0], sizeof(float));
+	memcpy(msg_buf + msg_pos, &ros_msg.pose.pose.position.x, sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &pos[1], sizeof(float));
+	memcpy(msg_buf + msg_pos, &ros_msg.pose.pose.position.y, sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &pos[2], sizeof(float));
+	memcpy(msg_buf + msg_pos, &ros_msg.pose.pose.position.z, sizeof(float));
 	msg_pos += sizeof(float);
 
 	//velocity (enu frame)
-	memcpy(msg_buf + msg_pos, &vel[0], sizeof(float));
+	memcpy(msg_buf + msg_pos, &ros_msg.twist.twist.linear.x, sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &vel[1], sizeof(float));
+	memcpy(msg_buf + msg_pos, &ros_msg.twist.twist.linear.y, sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &vel[2], sizeof(float));
+	memcpy(msg_buf + msg_pos, &ros_msg.twist.twist.linear.z, sizeof(float));
 	msg_pos += sizeof(float);
 
 	//attitude quaternion (ned frame)
-	memcpy(msg_buf + msg_pos, &q[0], sizeof(float));
+	memcpy(msg_buf + msg_pos, &ros_msg.pose.pose.orientation.w, sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &q[1], sizeof(float));
+	memcpy(msg_buf + msg_pos, &ros_msg.pose.pose.orientation.x, sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &q[2], sizeof(float));
+	memcpy(msg_buf + msg_pos, &ros_msg.pose.pose.orientation.y, sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &q[3], sizeof(float));
+	memcpy(msg_buf + msg_pos, &ros_msg.pose.pose.orientation.z, sizeof(float));
 	msg_pos += sizeof(float);
 
 	//end byte
