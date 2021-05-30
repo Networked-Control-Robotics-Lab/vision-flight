@@ -27,7 +27,7 @@ void apriltag_thread_entry(void)
 {
 	scan_best_camera_exposure(5000, false);
 
-	ROSCamDev ros_cam_dev("/arducam/camera/image_raw");
+	ROSCamDev ros_cam_dev("/cam0/arducam/triggered/camera/image_raw");
 
 	/* camera initialization */
 	//VideoCapture camera(0);
