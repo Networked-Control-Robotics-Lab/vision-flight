@@ -31,6 +31,14 @@ cv::Mat adjust_contrast(cv::Mat& raw_img, double alpha, double beta)
 	return std::move(contrast_img);
 }
 
+void send_ros_debug_image(ros::Publisher& debug_img_publisher, cv::Mat img)
+{
+	putText(img, "Navigation invalid", Point(5, 20), FONT_HERSHEY_COMPLEX_SMALL, 1.0, Scalar(0, 0, 255));
+
+	sensor_msgs::ImagePtr debug_img_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
+	debug_img_publisher.publish(debug_img_msg);
+}
+
 void apriltag_thread_entry(void)
 {
 	ROSCamDev ros_cam_dev("/arducam/triggered/camera/image_raw");
@@ -76,12 +84,24 @@ void apriltag_thread_entry(void)
 	tag_info.cx = cx;
 	tag_info.cy = cy;
 
-	float start_time = get_sys_time_s();
+	float last_time = get_sys_time_s();
 	float curr_time;
+	float elapsed_time;
+	float apriltag_update_rate = 5;
 
 	Mat raw_img, gray, gradient, contrast_img;
 	while (true) {
+		ros_cam_dev.clear();
 		ros_cam_dev.read(raw_img);
+
+		curr_time = get_sys_time_s();
+		elapsed_time = curr_time - last_time;
+		if(elapsed_time >= (1 / apriltag_update_rate)) {
+			last_time = get_sys_time_s();
+			send_ros_debug_image(debug_img_publisher, raw_img);
+		} else {
+			continue;
+		}
 
 		contrast_img = adjust_contrast(raw_img,  2, 0);
 
@@ -114,10 +134,7 @@ void apriltag_thread_entry(void)
 		/* visualization */
 		tags_visualize(raw_img, detections);
 
-		putText(raw_img, "Navigation invalid", Point(5, 20), FONT_HERSHEY_COMPLEX_SMALL, 1.0, Scalar(0, 0, 255));
-
-		sensor_msgs::ImagePtr debug_img_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", raw_img).toImageMsg();
-		debug_img_publisher.publish(debug_img_msg);
+		send_ros_debug_image(debug_img_publisher, raw_img);
 
 		apriltag_detections_destroy(detections);
 	}
