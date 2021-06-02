@@ -84,10 +84,10 @@ void apriltag_thread_entry(void)
 	tag_info.cx = cx;
 	tag_info.cy = cy;
 
-	float last_time = get_sys_time_s();
-	float curr_time;
-	float elapsed_time;
-	float apriltag_update_rate = 5;
+	double last_time = get_sys_time_s();
+	double curr_time;
+	double elapsed_time;
+	double apriltag_update_rate = 5;
 
 	Mat raw_img, gray, gradient, contrast_img;
 	while (true) {
@@ -96,10 +96,12 @@ void apriltag_thread_entry(void)
 
 		curr_time = get_sys_time_s();
 		elapsed_time = curr_time - last_time;
+
 		if(elapsed_time >= (1 / apriltag_update_rate)) {
 			last_time = get_sys_time_s();
-			send_ros_debug_image(debug_img_publisher, raw_img);
 		} else {
+			usleep(20000); //TODO: replace usleep with condition variable
+			send_ros_debug_image(debug_img_publisher, raw_img);
 			continue;
 		}
 
@@ -122,13 +124,13 @@ void apriltag_thread_entry(void)
 		/* localization */
 		apriltag_pose_t pose;
 		if(tag_localize(tag_id, detections, tag_info, pose) == true) {
-			cout << "t:\n"
-			     << pose.t->data[0] << "  " <<pose.t->data[1] << " " << pose.t->data[2] << endl;
-			cout << "R:\n"
-			     << pose.R->data[0] << ", " << pose.R->data[1] << ", " << pose.R->data[2] << endl
-			     << pose.R->data[3] << ", " << pose.R->data[4] << ", " << pose.R->data[5] << endl
-			     << pose.R->data[6] << ", " << pose.R->data[7] << ", " << pose.R->data[8] << endl;
-			cout << "--------------------------------" << endl;
+			cout << "t:\n\r"
+			     << pose.t->data[0] << "  " <<pose.t->data[1] << " " << pose.t->data[2] << "\n\r";
+			cout << "R:\n\r"
+			     << pose.R->data[0] << ", " << pose.R->data[1] << ", " << pose.R->data[2] << "\n\r"
+			     << pose.R->data[3] << ", " << pose.R->data[4] << ", " << pose.R->data[5] << "\n\r"
+			     << pose.R->data[6] << ", " << pose.R->data[7] << ", " << pose.R->data[8] << "\n\r";
+			cout << "--------------------------------" << "\n\r";
 		}
 
 		/* visualization */
