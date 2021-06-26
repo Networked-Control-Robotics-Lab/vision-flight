@@ -33,6 +33,9 @@ class WaypointManager {
 	/* mission ack message */
 	bool recvd_mission_ack;
 
+	/* command ack message */
+	bool recvd_cmd_long_ack;
+
 	int serial_fd;
 
 	void serial_puts(char *s, size_t size);
@@ -41,6 +44,8 @@ class WaypointManager {
 	bool wait_mission_ack();
 	bool send_mission_count_and_wait_ack();
 	bool send_mission_waypoint(int index, bool is_last_waypoint);
+	bool wait_command_long_ack();
+
 
 	public:
 	WaypointManager() {}
@@ -108,8 +113,8 @@ class WaypointManager {
 	void print_list();
 	bool send_mission();
 	void send_start_cmd();
-	void send_takeoff_cmd();
-	void send_land_cmd();
+	bool send_takeoff_cmd();
+	bool send_land_cmd();
 	void send_halt_cmd();
 	void send_resume_cmd();
 	void send_goto_cmd(float yaw, float x, float y, float z);

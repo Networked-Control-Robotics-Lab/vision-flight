@@ -105,6 +105,27 @@ bool WaypointManager::wait_mission_ack()
 	}
 }
 
+bool WaypointManager::wait_command_long_ack()
+{
+	double start_time = get_sys_time_s();
+
+	while(1) {
+		double current_time = get_sys_time_s();
+		double elapsed_time = current_time - start_time;
+
+		if(this->recvd_cmd_long_ack == true) {
+			this->recvd_cmd_long_ack = false;
+			return true;
+		}
+
+		/* one seconds timeout */
+		if(elapsed_time >= 1.0f) {
+			this->recvd_cmd_long_ack = false;
+			return false;
+		}
+	}
+}
+
 bool WaypointManager::send_mission_count_and_wait_ack()
 {
 	int trial = RETRY_TIME_MAX;
@@ -228,28 +249,59 @@ void WaypointManager::send_start_cmd()
 	send_mavlink_msg_to_serial(&msg);
 }
 
-void WaypointManager::send_takeoff_cmd()
+bool WaypointManager::send_takeoff_cmd()
 {
 	uint8_t confirm = 1;
 	float params[7] = {0};
-
 	mavlink_message_t msg;
-	mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
-	                                   MAV_CMD_NAV_TAKEOFF, confirm, params[0], params[1], params[2], params[3],
-	                                   params[4], params[5], params[6]);
-	send_mavlink_msg_to_serial(&msg);
+
+	int trial = RETRY_TIME_MAX;
+	do {
+		printf("mavlink: send landing command.\n\r");
+
+		mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
+	                                           MAV_CMD_NAV_TAKEOFF, confirm, params[0], params[1], params[2], params[3],
+	                                           params[4], params[5], params[6]);
+		send_mavlink_msg_to_serial(&msg);
+
+		bool ack_recvd = wait_command_long_ack();
+		if(ack_recvd == true) {
+			printf("succeeded.\n\r");
+			return true;
+		} else {
+			printf("timeout!\n\r");
+		}
+	} while(--trial);
+
+	return false;
+
 }
 
-void WaypointManager::send_land_cmd()
+bool WaypointManager::send_land_cmd()
 {
 	uint8_t confirm = 1;
-	float params[7];
-
+	float params[7] = {0};
 	mavlink_message_t msg;
-	mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
-	                                   MAV_CMD_NAV_LAND, confirm, params[0], params[1], params[2], params[3],
-	                                   params[4], params[5], params[6]);
-	send_mavlink_msg_to_serial(&msg);
+
+	int trial = RETRY_TIME_MAX;
+	do {
+		printf("mavlink: send landing command.\n\r");
+
+		mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
+	                                           MAV_CMD_NAV_LAND, confirm, params[0], params[1], params[2], params[3],
+	                                           params[4], params[5], params[6]);
+		send_mavlink_msg_to_serial(&msg);
+
+		bool ack_recvd = wait_command_long_ack();
+		if(ack_recvd == true) {
+			printf("succeeded.\n\r");
+			return true;
+		} else {
+			printf("timeout!\n\r");
+		}
+	} while(--trial);
+
+	return false;
 }
 
 void WaypointManager::send_halt_cmd()
@@ -318,6 +370,10 @@ void WaypointManager::mavlink_rx_message_handler(mavlink_message_t& msg)
 	/* MISSION_ACK */
 	case 47:
 		this->recvd_mission_ack = true;
+		break;
+	/* COMMAND_ACK */
+	case 77:
+		this->recvd_cmd_long_ack = true;
 		break;
 	}
 }
