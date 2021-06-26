@@ -102,6 +102,7 @@ class WaypointManager {
 	void mavlink_rx_message_handler(mavlink_message_t& msg);
 
 	void add(float x, float y, float z);
+	int  size();
 	void clear();
 	void get_waypoint(int index, waypoint_t& waypoint);
 	void print_list();

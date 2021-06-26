@@ -38,6 +38,11 @@ void WaypointManager::add(float x, float y, float z)
 	this->waypoints.push_back(new_waypoint);
 }
 
+int WaypointManager::size()
+{
+	return this->waypoints.size();
+}
+
 void WaypointManager::clear()
 {
 	this->waypoints.clear();

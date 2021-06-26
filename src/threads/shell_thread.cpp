@@ -12,9 +12,11 @@ struct cmd_list_entry shell_cmd_list[] = {
 	DEF_SHELL_CMD(quit)
 	DEF_SHELL_CMD(exposure)
 	DEF_SHELL_CMD(camera)
+	DEF_SHELL_CMD(fly)
+	DEF_SHELL_CMD(takeoff)
+	DEF_SHELL_CMD(land)
 	DEF_SHELL_CMD(waypoint)
 	DEF_SHELL_CMD(traj)
-	DEF_SHELL_CMD(mission)
 };
 
 void shell_greeting(void)

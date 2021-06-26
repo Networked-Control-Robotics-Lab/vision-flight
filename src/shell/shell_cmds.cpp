@@ -69,51 +69,6 @@ void shell_cmd_camera(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int p
 	}
 }
 
-void shell_cmd_waypoint(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
-{
-	if(param_cnt == 5) {
-		if(strcmp(param_list[1], "add") == 0) {
-			//waypoint_add_cmd_handler(param_list);
-		}
-	} else if(param_cnt == 2) {
-		if(strcmp(param_list[1], "start") == 0) {
-			//waypoint_start_cmd_handler(param_list);
-		} else if(strcmp(param_list[1], "list") == 0) {
-			//waypoint_list_cmd_handler(param_list);
-		} else if(strcmp(param_list[1], "halt") == 0) {
-			//waypoint_halt_cmd_handler(param_list);
-		} else if(strcmp(param_list[1], "resume") == 0) {
-			//waypoint_resume_cmd_handler(param_list);
-		} else {
-			shell_puts("unknown waypoint command!\n\r");
-		}
-	} else {
-		shell_puts("waypoint add x y z: add new waypoint\n\r"
-		           "waypoint start: start waypoint waypoint\n\r"
-		           "waypoint list: list current waypoint list\n\r"
-		           "waypoint halt: halt current executing waypoint waypoint\n\r"
-		           "waypoint resume: resume current halting waypoint waypoint\n\r");
-	}
-}
-
-void shell_cmd_traj(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
-{
-	if(param_cnt == 2) {
-		if(strcmp(param_list[1], "plan") == 0) {
-			//shell_cmd_traj_plan(param_list, param_cnt);
-		} else if(strcmp(param_list[1], "start") == 0) {
-			//shell_cmd_traj_start(param_list, param_cnt);
-		} else if(strcmp(param_list[1], "stop") == 0) {
-			//shell_cmd_traj_stop(param_list, param_cnt);
-		}
-
-	} else {
-		printf("traj plan: plan trajectory\n\r"
-		       "traj start: start trajectoy following\n\r"
-		       "traj stop: stop trajectory following\n\r");
-	}
-}
-
 void shell_cmd_fly(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
 {
 	char s[300] = {'\0'};
@@ -169,21 +124,161 @@ void shell_cmd_fly(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int para
 	}
 }
 
-void shell_cmd_mission(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
+void shell_cmd_takeoff(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
 {
-	mission_manager.waypoint.add(1, -1, 1);
-	mission_manager.waypoint.add(1, 1, 1);
-	mission_manager.waypoint.add(-1, 1, 1);
-	mission_manager.waypoint.add(-1, -1, 1);
-	mission_manager.waypoint.print_list();
-	mission_manager.waypoint.send_mission();
+	struct shell_struct shell;
+	shell_init_struct(&shell, "confirm takeoff command [y/n]: ");
+	shell_cli(&shell);
 
-	mission_manager.waypoint.send_takeoff_cmd();
-	mission_manager.waypoint.send_land_cmd();
-	mission_manager.waypoint.send_halt_cmd();
-	mission_manager.waypoint.send_resume_cmd();
-	mission_manager.waypoint.send_start_cmd();
+	if(strcmp(shell.buf, "y") == 0 || strcmp(shell.buf, "Y") == 0) {
+		mission_manager.waypoint.send_takeoff_cmd();
+	} else {
+		shell_puts("abort.\n\r");
+	}
+}
 
+void shell_cmd_land(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
+{
+	struct shell_struct shell;
+	shell_init_struct(&shell, "confirm landing command [y/n]: ");
+	shell_cli(&shell);
+
+	if(strcmp(shell.buf, "y") == 0 || strcmp(shell.buf, "Y") == 0) {
+		mission_manager.waypoint.send_land_cmd();
+	} else {
+		shell_puts("abort.\n\r");
+	}
+}
+
+static void waypoint_add_cmd_handler(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX])
+{
+	float pos[3] = {0.0f, 0.0f, 0.0f};
+	float heading = 0.0f;
+	float stay_time_sec = 1.0f;
+
+	if(parse_float_from_str(param_list[2], &pos[0]) == false) {
+		shell_puts("abort, bad arguments\n\r");
+		return;
+	}
+	if(parse_float_from_str(param_list[3], &pos[1]) == false) {
+		shell_puts("abort, bad arguments\n\r");
+		return;
+	}
+	if(parse_float_from_str(param_list[4], &pos[2]) == false) {
+		shell_puts("abort, bad arguments\n\r");
+		return;
+
+	}
+
+	char s[200] = {'\0'};
+	sprintf(s, "new waypoint: x=%.1fm, y=%.1fm, z=%.1fm\n\r", pos[0], pos[1], pos[2]);
+	shell_puts(s);
+
+	struct shell_struct shell;
+	shell_init_struct(&shell, "confirm waypoint add command [y/n]: ");
+	shell_cli(&shell);
+
+	if(strcmp(shell.buf, "y") == 0 || strcmp(shell.buf, "Y") == 0) {
+		mission_manager.waypoint.add(pos[0], pos[1], pos[2]);
+		shell_puts("successfully added new waypoint.\n\r");
+	} else {
+		shell_puts("abort.\n\r");
+	}
+}
+
+static void waypoint_halt_cmd_handler(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX])
+{
+	struct shell_struct shell;
+	shell_init_struct(&shell, "confirm waypoint halt command [y/n]: ");
+	shell_cli(&shell);
+
+	if(strcmp(shell.buf, "y") == 0 || strcmp(shell.buf, "Y") == 0) {
+		mission_manager.waypoint.send_halt_cmd();
+	} else {
+		shell_puts("abort.\n\r");
+	}
+}
+
+static void waypoint_resume_cmd_handler(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX])
+{
+	struct shell_struct shell;
+	shell_init_struct(&shell, "confirm waypoint resume command [y/n]: ");
+	shell_cli(&shell);
+
+	if(strcmp(shell.buf, "y") == 0 || strcmp(shell.buf, "Y") == 0) {
+		mission_manager.waypoint.send_resume_cmd();
+	} else {
+		shell_puts("abort.\n\r");
+	}
+}
+
+static void waypoint_start_cmd_handler(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX])
+{
+	struct shell_struct shell;
+	shell_init_struct(&shell, "confirm waypoint start command [y/n]: ");
+	shell_cli(&shell);
+
+	if(strcmp(shell.buf, "y") == 0 || strcmp(shell.buf, "Y") == 0) {
+		mission_manager.waypoint.send_start_cmd();
+	} else {
+		shell_puts("abort.\n\r");
+	}
+}
+
+static void waypoint_send_cmd_handler(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX])
+{
+	struct shell_struct shell;
+	shell_init_struct(&shell, "confirm waypoint send command [y/n]: ");
+	shell_cli(&shell);
+
+	if(strcmp(shell.buf, "y") == 0 || strcmp(shell.buf, "Y") == 0) {
+		mission_manager.waypoint.send_mission();
+	} else {
+		shell_puts("abort.\n\r");
+	}
+}
+
+static void waypoint_list_cmd_handler(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX])
+{
+	if(mission_manager.waypoint.size() > 0) {
+		mission_manager.waypoint.print_list();
+	} else {
+		shell_puts("error, waypoint list is empty.\n\r");
+	}
+}
+
+void shell_cmd_waypoint(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
+{
+	if(param_cnt == 5) {
+		if(strcmp(param_list[1], "add") == 0) {
+			waypoint_add_cmd_handler(param_list);
+		}
+	} else if(param_cnt == 2) {
+		if(strcmp(param_list[1], "halt") == 0) {
+			waypoint_halt_cmd_handler(param_list);
+		} else if(strcmp(param_list[1], "resume") == 0) {
+			waypoint_resume_cmd_handler(param_list);
+		} else if(strcmp(param_list[1], "start") == 0) {
+			waypoint_start_cmd_handler(param_list);
+		} else if(strcmp(param_list[1], "send") == 0) {
+			waypoint_send_cmd_handler(param_list);
+		} else if(strcmp(param_list[1], "list") == 0) {
+			waypoint_list_cmd_handler(param_list);
+		} else {
+			shell_puts("unknown waypoint command!\n\r");
+		}
+	} else {
+		shell_puts("waypoint add x y z: add new waypoint\n\r"
+                           "waypoint halt: halt waypoint mission\n\r"
+                           "waypoint resume: resume halted waypoint mission\n\r"
+                           "waypoint start: start waypoint mission\n\r"
+                           "waypoint send: send waypoint mission to the uav\n\r"
+                           "waypoint list: print waypoint mission\n\r");
+	}
+}
+
+void shell_cmd_traj(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
+{
 	trajectory_t t;
 	for(int i = 0; i < 8; i++) {
 		t.coeff[i] = i;
