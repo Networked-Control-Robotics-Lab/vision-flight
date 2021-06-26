@@ -230,7 +230,7 @@ void WaypointManager::send_start_cmd()
 
 void WaypointManager::send_takeoff_cmd()
 {
-	uint8_t confirm = 0;
+	uint8_t confirm = 1;
 	float params[7] = {0};
 
 	mavlink_message_t msg;
@@ -242,7 +242,7 @@ void WaypointManager::send_takeoff_cmd()
 
 void WaypointManager::send_land_cmd()
 {
-	uint8_t confirm = 0;
+	uint8_t confirm = 1;
 	float params[7];
 
 	mavlink_message_t msg;
@@ -255,7 +255,7 @@ void WaypointManager::send_land_cmd()
 void WaypointManager::send_halt_cmd()
 {
 	uint16_t cmd = MAV_CMD_OVERRIDE_GOTO;
-	uint8_t confirm = 0;
+	uint8_t confirm = 1;
 	float params[7] = {0};
 
 	params[0] = MAV_GOTO_DO_HOLD;
@@ -272,7 +272,7 @@ void WaypointManager::send_halt_cmd()
 void WaypointManager::send_resume_cmd()
 {
 	uint16_t cmd = MAV_CMD_OVERRIDE_GOTO;
-	uint8_t confirm = 0;
+	uint8_t confirm = 1;
 	float params[7] = {0};
 
 	params[0] = MAV_GOTO_DO_CONTINUE;
@@ -287,7 +287,7 @@ void WaypointManager::send_resume_cmd()
 void WaypointManager::send_goto_cmd(float yaw, float x, float y, float z)
 {
 	uint16_t cmd = MAV_CMD_OVERRIDE_GOTO;
-	uint8_t confirm = 0;
+	uint8_t confirm = 1;
 	float params[7] = {0};
 
 	params[0] = MAV_GOTO_DO_HOLD;
