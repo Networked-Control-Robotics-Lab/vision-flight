@@ -17,6 +17,18 @@ using namespace std;
 
 extern MissionManager mission_manager;
 
+static bool parse_float_from_str(char *str, float *value)
+{
+	char *end_ptr = NULL;
+	errno = 0;
+	*value = strtof(str, &end_ptr);
+	if (errno != 0 || *end_ptr != '\0') {
+		return false;
+	} else {
+		return true;
+	}
+}
+
 void shell_cmd_help(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
 {
 }
@@ -99,6 +111,61 @@ void shell_cmd_traj(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int par
 		printf("traj plan: plan trajectory\n\r"
 		       "traj start: start trajectoy following\n\r"
 		       "traj stop: stop trajectory following\n\r");
+	}
+}
+
+void shell_cmd_fly(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
+{
+	char s[300] = {'\0'};
+
+	if(param_cnt == 1) {
+		shell_puts("fly x y z\n\r");
+		return;
+	}
+
+	if(param_cnt != 4) {
+		shell_puts("abort, bad arguments!\n\r"
+		           "fly x y z\n\r");
+		return;
+	}
+
+	float pos[3] = {0.0f};
+
+	if (parse_float_from_str(param_list[1], &pos[0]) == false) {
+		shell_puts("abort, bad arguments!\n\r"
+		           "fly x y z\n\r");
+		return;
+	}
+
+	if (parse_float_from_str(param_list[2], &pos[1]) == false) {
+		shell_puts("abort, bad arguments!\n\r"
+		           "fly x y z\n\r");
+		return;
+	}
+
+	if (parse_float_from_str(param_list[3], &pos[2]) == false) {
+		shell_puts("abort, bad arguments!\n\r"
+		           "fly x y z\n\r");
+		return;
+	}
+
+	sprintf(s, "enu waypoint (x, y, z) = (%fm, %fm, %fm)\n\r", pos[0], pos[1], pos[2]);
+	shell_puts(s);
+
+	struct shell_struct shell;
+	shell_init_struct(&shell, "confirm fly command [y/n]: ");
+	shell_cli(&shell);
+
+	if(strcmp(shell.buf, "y") == 0 || strcmp(shell.buf, "Y") == 0) {
+		mission_manager.waypoint.send_goto_cmd(0, pos[0], pos[1], pos[2]);
+
+		//if() {
+		//	shell_puts("failed, waypoint out of geo-fence!\n\r");
+		//} else {
+			shell_puts("command accept.\n\r");
+		//}
+	} else {
+		shell_puts("abort.\n\r");
 	}
 }
 
