@@ -115,7 +115,7 @@ class WaypointManager {
 	void send_start_cmd();
 	bool send_takeoff_cmd();
 	bool send_land_cmd();
-	void send_halt_cmd();
-	void send_resume_cmd();
-	void send_goto_cmd(float yaw, float x, float y, float z);
+	bool send_halt_cmd();
+	bool send_resume_cmd();
+	bool send_goto_cmd(float yaw, float x, float y, float z);
 };

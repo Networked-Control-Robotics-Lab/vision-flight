@@ -274,7 +274,6 @@ bool WaypointManager::send_takeoff_cmd()
 	} while(--trial);
 
 	return false;
-
 }
 
 bool WaypointManager::send_land_cmd()
@@ -304,43 +303,70 @@ bool WaypointManager::send_land_cmd()
 	return false;
 }
 
-void WaypointManager::send_halt_cmd()
+bool WaypointManager::send_halt_cmd()
 {
 	uint16_t cmd = MAV_CMD_OVERRIDE_GOTO;
 	uint8_t confirm = 1;
 	float params[7] = {0};
+	mavlink_message_t msg;
 
 	params[0] = MAV_GOTO_DO_HOLD;
 	params[1] = MAV_GOTO_HOLD_AT_CURRENT_POSITION;
 	params[2] = MAV_FRAME_LOCAL_ENU;
 
-	mavlink_message_t msg;
-	mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
-	                                   cmd, confirm, params[0], params[1], params[2], params[3],
-	                                   params[4], params[5], params[6]);
-	send_mavlink_msg_to_serial(&msg);
+	int trial = RETRY_TIME_MAX;
+	do {
+		printf("mavlink: send halt command.\n\r");
+
+		mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
+	                                           cmd, confirm, params[0], params[1], params[2], params[3],
+	                                           params[4], params[5], params[6]);
+		send_mavlink_msg_to_serial(&msg);
+
+		bool ack_recvd = wait_command_long_ack();
+		if(ack_recvd == true) {
+			printf("succeeded.\n\r");
+			return true;
+		} else {
+			printf("timeout!\n\r");
+		}
+	} while(--trial);
 }
 
-void WaypointManager::send_resume_cmd()
+bool WaypointManager::send_resume_cmd()
 {
 	uint16_t cmd = MAV_CMD_OVERRIDE_GOTO;
 	uint8_t confirm = 1;
 	float params[7] = {0};
+	mavlink_message_t msg;
 
 	params[0] = MAV_GOTO_DO_CONTINUE;
 
-	mavlink_message_t msg;
-	mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
-	                                   cmd, confirm, params[0], params[1], params[2], params[3],
-	                                   params[4], params[5], params[6]);
-	send_mavlink_msg_to_serial(&msg);
+	int trial = RETRY_TIME_MAX;
+	do {
+		printf("mavlink: send resume command.\n\r");
+
+		mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
+		                                   cmd, confirm, params[0], params[1], params[2], params[3],
+		                                   params[4], params[5], params[6]);
+		send_mavlink_msg_to_serial(&msg);
+
+		bool ack_recvd = wait_command_long_ack();
+		if(ack_recvd == true) {
+			printf("succeeded.\n\r");
+			return true;
+		} else {
+			printf("timeout!\n\r");
+		}
+	} while(--trial);
 }
 
-void WaypointManager::send_goto_cmd(float yaw, float x, float y, float z)
+bool WaypointManager::send_goto_cmd(float yaw, float x, float y, float z)
 {
 	uint16_t cmd = MAV_CMD_OVERRIDE_GOTO;
 	uint8_t confirm = 1;
 	float params[7] = {0};
+	mavlink_message_t msg;
 
 	params[0] = MAV_GOTO_DO_HOLD;
 	params[1] = MAV_GOTO_HOLD_AT_SPECIFIED_POSITION;
@@ -350,11 +376,23 @@ void WaypointManager::send_goto_cmd(float yaw, float x, float y, float z)
 	params[5] = y;
 	params[6] = z;
 	
-	mavlink_message_t msg;
-	mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
-	                                   cmd, confirm, params[0], params[1], params[2], params[3],
-	                                   params[4], params[5], params[6]);
-	send_mavlink_msg_to_serial(&msg);
+	int trial = RETRY_TIME_MAX;
+	do {
+		printf("mavlink: send goto command.\n\r");
+
+		mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
+	                                           cmd, confirm, params[0], params[1], params[2], params[3],
+	                                           params[4], params[5], params[6]);
+		send_mavlink_msg_to_serial(&msg);
+
+		bool ack_recvd = wait_command_long_ack();
+		if(ack_recvd == true) {
+			printf("succeeded.\n\r");
+			return true;
+		} else {
+			printf("timeout!\n\r");
+		}
+	} while(--trial);
 }
 
 void WaypointManager::mavlink_rx_message_handler(mavlink_message_t& msg)
