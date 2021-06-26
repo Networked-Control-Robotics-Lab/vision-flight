@@ -111,4 +111,5 @@ class WaypointManager {
 	void send_land_cmd();
 	void send_halt_cmd();
 	void send_resume_cmd();
+	void send_goto_cmd(float yaw, float x, float y, float z);
 };
