@@ -35,6 +35,7 @@ class WaypointManager {
 
 	/* command ack message */
 	bool recvd_cmd_long_ack;
+	uint8_t cmd_ack_result;
 
 	int serial_fd;
 
@@ -45,7 +46,7 @@ class WaypointManager {
 	bool send_mission_count_and_wait_ack();
 	bool send_mission_waypoint(int index, bool is_last_waypoint);
 	bool wait_command_long_ack();
-
+	bool send_command_long_message(const char* prompt, uint16_t cmd, float* params);
 
 	public:
 	WaypointManager() {}
