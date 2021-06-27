@@ -265,7 +265,14 @@ bool WaypointManager::send_command_long_message(const char* prompt, uint16_t cmd
 
 		bool ack_recvd = wait_command_long_ack();
 		if(ack_recvd == true) {
-			printf("succeeded.\n\r");
+			if(this->cmd_ack_result == MAV_RESULT_ACCEPTED) {
+				printf("command accepted.\n\r");
+			} else if(this->cmd_ack_result == MAV_RESULT_DENIED) {
+				printf("command denied.\n\r");
+			} else {
+				printf("error, unknown ack status by the uav.\n\r");
+			}
+				
 			return true;
 		} else {
 			printf("timeout!\n\r");
