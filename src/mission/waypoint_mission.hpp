@@ -112,7 +112,8 @@ class WaypointManager {
 	void get_waypoint(int index, waypoint_t& waypoint);
 	void print_list();
 	bool send_mission();
-	void send_start_cmd();
+	void send_auto_mode_switch_cmd();
+	bool send_start_cmd();
 	bool send_takeoff_cmd();
 	bool send_land_cmd();
 	bool send_halt_cmd();

@@ -237,7 +237,7 @@ bool WaypointManager::send_mission()
 	return succeed;
 }
 
-void WaypointManager::send_start_cmd()
+void WaypointManager::send_auto_mode_switch_cmd()
 {
 	//XXX: emulate what qgroundcontrol do, may change the behavior later
 	uint8_t base_mode = 81;
@@ -247,6 +247,41 @@ void WaypointManager::send_start_cmd()
 	mavlink_msg_set_mode_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg,
                                        this->target_id, base_mode, custom_mode);
 	send_mavlink_msg_to_serial(&msg);
+}
+
+bool WaypointManager::send_start_cmd()
+{
+	if(this->size() <= 0) {
+		printf("abort, waypoint list is empty.\n\r");
+		return false;
+	}
+
+	uint8_t confirm = 1;
+	float params[7] = {0};
+	mavlink_message_t msg;
+
+	params[0] = 0;                //start waypoint number
+	params[1] = this->size() - 1; //end waypoint number
+
+	int trial = RETRY_TIME_MAX;
+	do {
+		printf("mavlink: send mission start command.\n\r");
+
+		mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
+	                                           MAV_CMD_MISSION_START, confirm, params[0], params[1], params[2], params[3],
+	                                           params[4], params[5], params[6]);
+		send_mavlink_msg_to_serial(&msg);
+
+		bool ack_recvd = wait_command_long_ack();
+		if(ack_recvd == true) {
+			printf("succeeded.\n\r");
+			return true;
+		} else {
+			printf("timeout!\n\r");
+		}
+	} while(--trial);
+
+	return false;
 }
 
 bool WaypointManager::send_takeoff_cmd()
