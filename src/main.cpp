@@ -12,7 +12,6 @@ using namespace std;
 
 MissionManager mission_manager;
 VINSMonoBridge* vins_mono_bridge;
-
 ExposureController* exposure_controller;
 
 int main(int argc, char **argv)

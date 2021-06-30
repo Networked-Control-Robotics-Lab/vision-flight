@@ -94,7 +94,7 @@ void apriltag_thread_entry(void)
 	Mat raw_img, gray, gradient, contrast_img;
 
 	while (true) {
-		//exposure_controller->realtime_adjustment();
+		//exposure_controller->realtime_adjustment(true);
 		//continue;
 
 		ros_cam_dev.clear();

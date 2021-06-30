@@ -10,12 +10,12 @@ using namespace cv;
 
 ExposureController::ExposureController()
 {
-	ros_cam_dev = new ROSCamDev("/arducam/camera/image_raw");
+	ros_cam_dev = new ROSCamDev("/arducam/triggered/camera/image_raw");
 	this->step_size = 2000;
 	this->exp_min = 0;
 	this->exp_max = 3000;
-	this->intensity_threshold = 0.1;
-	this->exp_curr = 2500;
+	this->intensity_threshold = 0.07;
+	this->exp_curr;
 }
 
 void ExposureController::convert_to_laplacian(cv::Mat& raw_img, cv::Mat& laplacian_img)
@@ -70,7 +70,7 @@ float ExposureController::grade_laplacian(int exp, int sleep_time)
 	return calculate_average_intensity(laplacian_img);
 }
 
-void ExposureController::realtime_adjustment()
+void ExposureController::realtime_adjustment(bool debug_on)
 {
 	cv::Mat frame;
 
@@ -105,10 +105,12 @@ void ExposureController::realtime_adjustment()
 			this->exp_curr = this->exp_min;
 		}
 
-		printf("intensity change = %f, new exposure = %f\n\r",
-		       intensity_change, this->exp_curr);
-
 		arducam_ros_exposure_ctrl((int)this->exp_curr);
+
+		if(debug_on == true) {
+			printf("intensity change = %f, new exposure = %f\n\r",
+			       intensity_change, this->exp_curr);
+		}
 	}
 }
 
@@ -180,6 +182,8 @@ int ExposureController::binary_search_adjustment(bool debug_on)
 	int best_exp = (int)((float)this->exp_max / (float)N * best_interval);
 	arducam_ros_exposure_ctrl(best_exp);
 
+	exp_curr = best_exp;
+
 	if(debug_on == true) {
 		printf("best exposure time = %d\n\r", best_exp);
 	}
@@ -189,8 +193,6 @@ int ExposureController::binary_search_adjustment(bool debug_on)
 
 void ExposureController::test()
 {
-	ROSCamDev ros_cam_dev("/arducam/triggered/camera/image_raw");
-
 	static int exp = 0, sign = 1;
 	int max_exp = 10000;
 	int delta = 1000;
@@ -198,7 +200,7 @@ void ExposureController::test()
 	cv::Mat raw_img, gradient;
 
 	while(1) {
-		ros_cam_dev.read(raw_img);
+		ros_cam_dev->read(raw_img);
 
 		convert_to_laplacian(raw_img, gradient);
 		calculate_average_intensity(gradient);

@@ -8,12 +8,10 @@ private:
 	ROSCamDev* ros_cam_dev;
 	float exp_min;
 	float exp_max;
+	float exp_curr;
 
 	float step_size;
 	float intensity_threshold;
-
-	float exp_curr;
-
 	float intensity_last;
 
 	void convert_to_laplacian(cv::Mat& raw_img, cv::Mat& laplacian_img);
@@ -28,7 +26,7 @@ public:
 		delete ros_cam_dev;
 	}
 
-	void realtime_adjustment();
+	void realtime_adjustment(bool debug_on);
 	int binary_search_adjustment(bool debug_on);
 
 	//copy constructor
