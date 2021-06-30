@@ -8,6 +8,15 @@
 using namespace std;
 using namespace cv;
 
+ExposureController::ExposureController()
+{
+	ros_cam_dev = new ROSCamDev("/arducam/camera/image_raw");
+	this->step_size = 2000;
+	this->exp_min = 0;
+	this->exp_max = 3000;
+	this->intensity_threshold = 0.1;
+	this->exp_curr = 2500;
+}
 
 void ExposureController::convert_to_laplacian(cv::Mat& raw_img, cv::Mat& laplacian_img)
 {
@@ -59,16 +68,6 @@ float ExposureController::grade_laplacian(int exp, int sleep_time)
 
 	convert_to_laplacian(raw_img, laplacian_img);
 	return calculate_average_intensity(laplacian_img);
-}
-
-ExposureController::ExposureController()
-{
-	ros_cam_dev = new ROSCamDev("/arducam/camera/image_raw");
-	this->step_size = 2000;
-	this->exp_min = 0;
-	this->exp_max = 3000;
-	this->intensity_threshold = 0.1;
-	this->exp_curr = 2500;
 }
 
 void ExposureController::realtime_adjustment()
