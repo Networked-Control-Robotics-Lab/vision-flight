@@ -9,6 +9,8 @@ using namespace cv;
 
 #define OPTIMAL_EXPOSURE_BINARY_SEARCH 1
 
+float camera_exposure_time = 2500;
+
 void generate_gradient_image(cv::Mat& raw_img, cv::Mat& gradient_img)
 {
 	int kernel_size = 3;
@@ -49,6 +51,23 @@ float calculate_image_gradient_strength(cv::Mat& gradient_img)
 	return gradient_strength;
 }
 
+float calculate_image_average_intensity(cv::Mat& img)
+{
+	int img_row = img.size().height;
+	int img_col = img.size().width;
+	float rescale = 1.0f / (img_row * img_col * 256);
+	float intensity = 0;
+
+	for(int r = 0; r < img_row; r++) {
+		for(int c = 0; c < img_col; c++) {
+			intensity += img.at<uint8_t>(r, c);
+		}
+	}
+	intensity *= rescale;
+
+	return intensity;
+}
+
 float grade_new_image(ROSCamDev& ros_cam_dev, int exp, int sleep_time)
 {
 	cv::Mat raw_img, gradient_img;
@@ -65,7 +84,7 @@ float grade_new_image(ROSCamDev& ros_cam_dev, int exp, int sleep_time)
 
 int binary_search_best_camera_exposure(int max_exp, bool debug_on)
 {
-	ROSCamDev ros_cam_dev("/arducam/triggered/camera/image_raw");
+	ROSCamDev ros_cam_dev("/arducam/camera/image_raw");
 	int sleep_time = 150000;
 
 	int N = 1024;
@@ -135,12 +154,14 @@ int binary_search_best_camera_exposure(int max_exp, bool debug_on)
 		printf("best exposure time = %d\n\r", best_exp);
 	}
 
+	camera_exposure_time = best_exp;
+
 	return best_exp;
 }
 
 int full_search_best_camera_exposure(int max_exp, bool debug_on)
 {
-	ROSCamDev ros_cam_dev("/arducam/triggered/camera/image_raw");
+	ROSCamDev ros_cam_dev("/arducam/camera/image_raw");
 
 	int sleep_time = 150000; //minimum delay = 1/30s (~33333us)
 
@@ -237,6 +258,66 @@ int scan_best_camera_exposure(int max_exp, bool debug_on)
 #else
 	return full_search_best_camera_exposure(max_exp, debug_on);
 #endif
+}
+
+void camera_exposure_gradient_descent_ctrl()
+{
+	static ROSCamDev ros_cam_dev("/arducam/camera/image_raw");
+	static float grade_last = 0;
+	static double time_last;
+	static bool init = false;
+	static bool fine_tune;
+
+	cv::Mat frame;
+	float step_size = 2000; //gain
+	float threshold = 0.1;
+	float grade_now;
+	double time_now;
+	float exp_min = 0, exp_max = 3000;
+
+	if(init == false) {
+		init = true;
+		ros_cam_dev.clear();
+		ros_cam_dev.read(frame);
+		grade_last = calculate_image_average_intensity(frame);
+		time_last = get_sys_time_s();
+		return;
+	}
+
+	/* frequency control */
+	time_now = get_sys_time_s();
+	float elapsed_time = time_now - time_last;
+	if(elapsed_time < 0.5) {
+		return;
+	} else {
+		time_last = time_now;
+	}
+
+	ros_cam_dev.clear();
+	ros_cam_dev.read(frame);
+	grade_now = calculate_image_average_intensity(frame);
+
+	float diff = grade_now - grade_last;
+
+	/* phase1: detect strong light change, gradient descent of the intensity norm */
+	if(fabs(diff) > threshold) {
+		/* gradient descent */
+		float delta_exp = -diff * step_size;
+		camera_exposure_time += delta_exp;
+
+		/* upper bound and lower bound of the exposure time */
+		if(camera_exposure_time > exp_max) {
+			camera_exposure_time = exp_max;
+		} else if(camera_exposure_time < exp_min) {
+			camera_exposure_time = exp_min;
+		}
+
+		printf("diff = %fm new exp = %f\n\r", diff, camera_exposure_time);
+
+		arducam_ros_exposure_ctrl((int)camera_exposure_time);
+	}
+
+	/* phase2: fine tune of the exposure value to maximize the feature gradient */
 }
 
 void camera_exposure_test()
