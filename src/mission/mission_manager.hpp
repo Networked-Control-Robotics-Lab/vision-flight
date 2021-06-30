@@ -6,8 +6,9 @@
 
 #define RETRY_TIME_MAX 5
 
-class MissionManager {
-	private:
+class MissionManager
+{
+private:
 	int serial_fd;
 	std::thread *thread_mavlink_rx;
 	bool kill_thread_signal;
@@ -16,13 +17,13 @@ class MissionManager {
 	int serial_getc(char *c);
 	void mavlink_rx_thread_entry();
 
-	public:
+public:
 	WaypointManager waypoint;
 	TrajectoryManager trajectory;
 
 	MissionManager(): thread_mavlink_rx(nullptr), kill_thread_signal(false) {};
 	MissionManager(int target_id, string serial_port, int baudrate,
-                       int frame, bool traj_z_enabled);
+	               int frame, bool traj_z_enabled);
 
 	void launch_mavlink_listener()
 	{

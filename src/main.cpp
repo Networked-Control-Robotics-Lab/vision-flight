@@ -11,7 +11,9 @@
 using namespace std;
 
 MissionManager mission_manager;
-VINSMonoBridge *vins_mono_bridge;
+VINSMonoBridge* vins_mono_bridge;
+
+ExposureController* exposure_controller;
 
 int main(int argc, char **argv)
 {
@@ -29,7 +31,8 @@ int main(int argc, char **argv)
 	std::thread thread_ros(ros_thread_entry);
 
 	printf("calibrating camera exposure value, please wait...\n");
-	int exp = scan_best_camera_exposure(500, false);
+	exposure_controller = new ExposureController();
+	int exp = exposure_controller->binary_search_adjustment(true);
 	printf("camera exposure value = %d\n", exp);
 
 	std::thread thread_apriltag(apriltag_thread_entry);

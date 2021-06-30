@@ -19,7 +19,7 @@ void ROSCamDev::cv_bridge_callback(const sensor_msgs::ImageConstPtr& msg)
 		cv_img_queue.push(new_img);
 	} catch (cv_bridge::Exception& e) {
 		ROS_ERROR("cv_bridge exception: %s", e.what());
-	return;
+		return;
 	}
 }
 

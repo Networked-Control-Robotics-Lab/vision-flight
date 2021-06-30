@@ -23,6 +23,8 @@ extern "C" {
 using namespace std;
 using namespace cv;
 
+extern ExposureController* exposure_controller;
+
 cv::Mat adjust_contrast(cv::Mat& raw_img, double alpha, double beta)
 {
 	cv::Mat contrast_img;
@@ -90,7 +92,11 @@ void apriltag_thread_entry(void)
 	double apriltag_update_rate = 5;
 
 	Mat raw_img, gray, gradient, contrast_img;
+
 	while (true) {
+		//exposure_controller->realtime_adjustment();
+		//continue;
+
 		ros_cam_dev.clear();
 		ros_cam_dev.read(raw_img);
 

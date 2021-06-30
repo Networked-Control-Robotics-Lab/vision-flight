@@ -10,14 +10,14 @@ using namespace std;
 
 class ROSCamDev
 {
-	private:
+private:
 	queue<cv::Mat> cv_img_queue;
 
 	ros::NodeHandle node;
 	image_transport::ImageTransport img_transport;
 	image_transport::Subscriber img_sub;
- 
-	public:
+
+public:
 	ROSCamDev(string topic);
 	~ROSCamDev() {}
 

@@ -27,8 +27,9 @@ typedef struct {
 	float flight_time;
 } trajectory3d_t;
 
-class TrajectoryManager {
-	private:
+class TrajectoryManager
+{
+private:
 	vector<trajectory3d_t> trajs;
 	int target_id;
 
@@ -47,29 +48,29 @@ class TrajectoryManager {
 	bool send_traj_write_and_wait_ack();
 	bool send_traj_item_and_wait_ack(uint8_t index, uint8_t type);
 
-	public:
+public:
 	TrajectoryManager() {}
 	TrajectoryManager(int _target_id, bool _z_enabled, int _serial_fd): target_id(_target_id),
-                                                                            z_enabled(_z_enabled),
-                                                                            recvd_traj_ack(false),
-                                                                            serial_fd(_serial_fd) {}
+		z_enabled(_z_enabled),
+		recvd_traj_ack(false),
+		serial_fd(_serial_fd) {}
 	~TrajectoryManager() {}
 
 	//copy constructor
 	TrajectoryManager(TrajectoryManager const& rhs): trajs(rhs.trajs),
-                                                         target_id(rhs.target_id),
-                                                         z_enabled(rhs.z_enabled),
-                                                         recvd_traj_ack(rhs.recvd_traj_ack),
-                                                         traj_ack_val(rhs.traj_ack_val),
-                                                         serial_fd(rhs.serial_fd) {}
-                                                      
+		target_id(rhs.target_id),
+		z_enabled(rhs.z_enabled),
+		recvd_traj_ack(rhs.recvd_traj_ack),
+		traj_ack_val(rhs.traj_ack_val),
+		serial_fd(rhs.serial_fd) {}
+
 	//move constructor
 	TrajectoryManager(TrajectoryManager&& rhs): trajs(std::move(rhs.trajs)),
-                                                    target_id(std::move(rhs.target_id)),
-                                                    z_enabled(std::move(rhs.z_enabled)),
-                                                    recvd_traj_ack(std::move(rhs.recvd_traj_ack)),
-                                                    traj_ack_val(std::move(rhs.traj_ack_val)),
-                                                    serial_fd(std::move(rhs.serial_fd)) {}
+		target_id(std::move(rhs.target_id)),
+		z_enabled(std::move(rhs.z_enabled)),
+		recvd_traj_ack(std::move(rhs.recvd_traj_ack)),
+		traj_ack_val(std::move(rhs.traj_ack_val)),
+		serial_fd(std::move(rhs.serial_fd)) {}
 
 	//copy assignment
 	TrajectoryManager& operator=(TrajectoryManager const& rhs)

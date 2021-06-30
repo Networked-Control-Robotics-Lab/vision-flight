@@ -22,10 +22,10 @@ void WaypointManager::serial_puts(char *s, size_t size)
 
 void WaypointManager::send_mavlink_msg_to_serial(mavlink_message_t *msg)
 {
-        uint8_t buf[MAVLINK_MAX_PAYLOAD_LEN];
-        uint16_t len = mavlink_msg_to_send_buffer(buf, msg);
+	uint8_t buf[MAVLINK_MAX_PAYLOAD_LEN];
+	uint16_t len = mavlink_msg_to_send_buffer(buf, msg);
 
-        serial_puts((char *)buf, len);
+	serial_puts((char *)buf, len);
 }
 
 void WaypointManager::add(float x, float y, float z)
@@ -134,7 +134,7 @@ bool WaypointManager::send_mission_count_and_wait_ack()
 
 		mavlink_message_t msg;
 		mavlink_msg_mission_count_pack(GROUND_STATION_ID, 1, &msg, this->target_id, 0,
-                                               this->waypoints.size(), MAV_MISSION_TYPE_MISSION);
+		                               this->waypoints.size(), MAV_MISSION_TYPE_MISSION);
 		send_mavlink_msg_to_serial(&msg);
 
 		bool ack_recvd = wait_mission_request_int();
@@ -173,16 +173,16 @@ bool WaypointManager::send_mission_waypoint(int index, bool is_last_waypoint)
 
 	bool recvd_ack = false;
 	int trial = RETRY_TIME_MAX;
-       	do {
+	do {
 		/* send requested waypoint */
 		printf("mavlink: send waypoint #%d\n\r", index);
 
 		mavlink_message_t msg;
 		mavlink_msg_mission_item_int_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
-                                                       index, _frame, command, current, autocontinue,
-                                                       params[0], params[1], params[2], params[3],
-                                                       waypoint.x, waypoint.y, waypoint.z,
-                                                       MAV_MISSION_TYPE_MISSION);
+		                                       index, _frame, command, current, autocontinue,
+		                                       params[0], params[1], params[2], params[3],
+		                                       waypoint.x, waypoint.y, waypoint.z,
+		                                       MAV_MISSION_TYPE_MISSION);
 		send_mavlink_msg_to_serial(&msg);
 
 		bool ack_recvd = false;
@@ -193,7 +193,7 @@ bool WaypointManager::send_mission_waypoint(int index, bool is_last_waypoint)
 			/* not the last waypoint: should receive mission request int message */
 			ack_recvd = wait_mission_request_int();
 		}
-		
+
 
 		/* check if successfully received the ack */
 		if(ack_recvd == true) {
@@ -245,7 +245,7 @@ void WaypointManager::send_auto_mode_switch_cmd()
 
 	mavlink_message_t msg;
 	mavlink_msg_set_mode_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg,
-                                       this->target_id, base_mode, custom_mode);
+	                               this->target_id, base_mode, custom_mode);
 	send_mavlink_msg_to_serial(&msg);
 }
 
@@ -259,8 +259,8 @@ bool WaypointManager::send_command_long_message(const char* prompt, uint16_t cmd
 		printf("%s", prompt);
 
 		mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
-	                                           MAV_CMD_MISSION_START, confirm, params[0], params[1], params[2], params[3],
-	                                           params[4], params[5], params[6]);
+		                                   MAV_CMD_MISSION_START, confirm, params[0], params[1], params[2], params[3],
+		                                   params[4], params[5], params[6]);
 		send_mavlink_msg_to_serial(&msg);
 
 		bool ack_recvd = wait_command_long_ack();
@@ -272,7 +272,7 @@ bool WaypointManager::send_command_long_message(const char* prompt, uint16_t cmd
 			} else {
 				printf("error, unknown ack status by the uav.\n\r");
 			}
-				
+
 			return true;
 		} else {
 			printf("timeout!\n\r");
@@ -294,7 +294,7 @@ bool WaypointManager::send_start_cmd()
 	params[1] = this->size() - 1; //end waypoint number
 
 	return send_command_long_message("mavlink: send mission start command.\n\r",
-                                         MAV_CMD_MISSION_START, params);
+	                                 MAV_CMD_MISSION_START, params);
 }
 
 bool WaypointManager::send_takeoff_cmd()
@@ -302,7 +302,7 @@ bool WaypointManager::send_takeoff_cmd()
 	float params[7] = {0};
 
 	return send_command_long_message("mavlink: send takeoff command.\n\r",
-                                         MAV_CMD_NAV_TAKEOFF, params);
+	                                 MAV_CMD_NAV_TAKEOFF, params);
 }
 
 bool WaypointManager::send_land_cmd()
@@ -310,7 +310,7 @@ bool WaypointManager::send_land_cmd()
 	float params[7] = {0};
 
 	return send_command_long_message("mavlink: send landing command.\n\r",
-                                         MAV_CMD_NAV_LAND, params);
+	                                 MAV_CMD_NAV_LAND, params);
 }
 
 bool WaypointManager::send_halt_cmd()
@@ -321,7 +321,7 @@ bool WaypointManager::send_halt_cmd()
 	params[2] = MAV_FRAME_LOCAL_ENU;
 
 	return send_command_long_message("mavlink: send halt command.\n\r",
-                                         MAV_CMD_OVERRIDE_GOTO, params);
+	                                 MAV_CMD_OVERRIDE_GOTO, params);
 }
 
 bool WaypointManager::send_resume_cmd()
@@ -330,7 +330,7 @@ bool WaypointManager::send_resume_cmd()
 	params[0] = MAV_GOTO_DO_CONTINUE;
 
 	return send_command_long_message("mavlink: send resume command.\n\r",
-                                         MAV_CMD_OVERRIDE_GOTO, params);
+	                                 MAV_CMD_OVERRIDE_GOTO, params);
 }
 
 bool WaypointManager::send_goto_cmd(float yaw, float x, float y, float z)
@@ -345,7 +345,7 @@ bool WaypointManager::send_goto_cmd(float yaw, float x, float y, float z)
 	params[6] = z;
 
 	return send_command_long_message("mavlink: send goto command.\n\r",
-                                         MAV_CMD_OVERRIDE_GOTO, params);
+	                                 MAV_CMD_OVERRIDE_GOTO, params);
 }
 
 void WaypointManager::mavlink_rx_message_handler(mavlink_message_t& msg)

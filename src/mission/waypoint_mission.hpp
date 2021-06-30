@@ -9,7 +9,7 @@ extern "C" {
 
 enum {
 	WAYPOINT_CARTESIAN_FRAME,
-	WAYPOINT_GEODETIC_FRAME	
+	WAYPOINT_GEODETIC_FRAME
 } WaypointManagerFrame;
 
 using namespace std;
@@ -20,8 +20,9 @@ typedef struct {
 	float z;
 } waypoint_t;
 
-class WaypointManager {
-	private:
+class WaypointManager
+{
+private:
 	vector<waypoint_t> waypoints;
 	int target_id;
 	int frame;
@@ -48,32 +49,32 @@ class WaypointManager {
 	bool wait_command_long_ack();
 	bool send_command_long_message(const char* prompt, uint16_t cmd, float* params);
 
-	public:
+public:
 	WaypointManager() {}
 	WaypointManager(int _target_id, int _frame, int _serial_fd): target_id(_target_id),
-                                                                     frame(_frame),
-                                                                     recvd_mission_request_int(false),
-                                                                     recvd_mission_ack(false),
-                                                                     serial_fd(_serial_fd) {}
+		frame(_frame),
+		recvd_mission_request_int(false),
+		recvd_mission_ack(false),
+		serial_fd(_serial_fd) {}
 	~WaypointManager() {}
 
 	//copy constructor
 	WaypointManager(WaypointManager const& rhs): waypoints(rhs.waypoints),
-                                                     target_id(rhs.target_id),
-                                                     frame(rhs.frame),
-                                                     recvd_mission_request_int(rhs.recvd_mission_request_int),
-                                                     mission_request_sequence(rhs.mission_request_sequence),
-                                                     recvd_mission_ack(rhs.recvd_mission_ack),
-                                                     serial_fd(rhs.serial_fd) {}
+		target_id(rhs.target_id),
+		frame(rhs.frame),
+		recvd_mission_request_int(rhs.recvd_mission_request_int),
+		mission_request_sequence(rhs.mission_request_sequence),
+		recvd_mission_ack(rhs.recvd_mission_ack),
+		serial_fd(rhs.serial_fd) {}
 
 	//move constructor
 	WaypointManager(WaypointManager&& rhs): waypoints(std::move(rhs.waypoints)),
-                                                target_id(std::move(rhs.target_id)),
-                                                frame(std::move(rhs.frame)),
-                                                recvd_mission_request_int(std::move(rhs.recvd_mission_request_int)),
-                                                mission_request_sequence(std::move(rhs.mission_request_sequence)),
-                                                recvd_mission_ack(std::move(rhs.recvd_mission_ack)),
-                                                serial_fd(std::move(rhs.serial_fd)) {}
+		target_id(std::move(rhs.target_id)),
+		frame(std::move(rhs.frame)),
+		recvd_mission_request_int(std::move(rhs.recvd_mission_request_int)),
+		mission_request_sequence(std::move(rhs.mission_request_sequence)),
+		recvd_mission_ack(std::move(rhs.recvd_mission_ack)),
+		serial_fd(std::move(rhs.serial_fd)) {}
 
 	//copy assignment
 	WaypointManager& operator=(WaypointManager const& rhs)

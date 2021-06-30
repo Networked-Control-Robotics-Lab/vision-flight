@@ -16,6 +16,7 @@
 using namespace std;
 
 extern MissionManager mission_manager;
+extern ExposureController* exposure_controller;
 
 static bool parse_float_from_str(char *str, float *value)
 {
@@ -52,7 +53,7 @@ void shell_cmd_quit(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int par
 
 void shell_cmd_exposure(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
 {
-	scan_best_camera_exposure(500, true);
+	exposure_controller->binary_search_adjustment(true);
 }
 
 void shell_cmd_camera(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int param_cnt)
@@ -117,7 +118,7 @@ void shell_cmd_fly(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int para
 		//if() {
 		//	shell_puts("failed, waypoint out of geo-fence!\n\r");
 		//} else {
-			shell_puts("command accept.\n\r");
+		shell_puts("command accept.\n\r");
 		//}
 	} else {
 		shell_puts("abort.\n\r");
@@ -269,11 +270,11 @@ void shell_cmd_waypoint(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int
 		}
 	} else {
 		shell_puts("waypoint add x y z: add new waypoint\n\r"
-                           "waypoint halt: halt waypoint mission\n\r"
-                           "waypoint resume: resume halted waypoint mission\n\r"
-                           "waypoint start: start waypoint mission\n\r"
-                           "waypoint send: send waypoint mission to the uav\n\r"
-                           "waypoint list: print waypoint mission\n\r");
+		           "waypoint halt: halt waypoint mission\n\r"
+		           "waypoint resume: resume halted waypoint mission\n\r"
+		           "waypoint start: start waypoint mission\n\r"
+		           "waypoint send: send waypoint mission to the uav\n\r"
+		           "waypoint list: print waypoint mission\n\r");
 	}
 }
 

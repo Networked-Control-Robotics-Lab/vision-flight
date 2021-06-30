@@ -33,7 +33,7 @@ void TrajectoryManager::add(trajectory_t& x, trajectory_t& y, trajectory_t& z, f
 	traj3d.y = y;
 	traj3d.z = z;
 	traj3d.flight_time = flight_time;
-	this->trajs.push_back(traj3d); 
+	this->trajs.push_back(traj3d);
 }
 
 void TrajectoryManager::clear()
@@ -104,7 +104,7 @@ bool TrajectoryManager::send_traj_write_and_wait_ack()
 
 		mavlink_message_t msg;
 		mavlink_msg_polynomial_trajectory_write_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
-                                                                  this->trajs.size(), _z_enabled, _yaw_enabled);
+		                this->trajs.size(), _z_enabled, _yaw_enabled);
 		send_mavlink_msg_to_serial(&msg);
 
 		bool ack_recvd = wait_trajectory_ack();
@@ -146,7 +146,7 @@ bool TrajectoryManager::send_traj_item_and_wait_ack(uint8_t index, uint8_t type)
 
 		mavlink_message_t msg;
 		mavlink_msg_polynomial_trajectory_item_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id,
-                                                                 0, type, index, traj_coeff, flight_time);
+		                0, type, index, traj_coeff, flight_time);
 		send_mavlink_msg_to_serial(&msg);
 
 		bool ack_recvd = wait_trajectory_ack();
@@ -175,7 +175,7 @@ bool TrajectoryManager::send_mission()
 	if(send_traj_write_and_wait_ack() == false) {
 		return false;
 	}
-	
+
 	/* trajectories sending step */
 	for(int i = 0; i < this->trajs.size(); i++) {
 		succeed = send_traj_item_and_wait_ack(i, TRAJECTORY_TYPE_X);
@@ -192,7 +192,7 @@ bool TrajectoryManager::send_mission()
 			succeed = send_traj_item_and_wait_ack(i, TRAJECTORY_TYPE_Z);
 			if(succeed == false) {
 				break;
-			}		
+			}
 		}
 	}
 
@@ -227,7 +227,7 @@ void TrajectoryManager::start(bool looping)
 {
 	mavlink_message_t msg;
 	mavlink_msg_polynomial_trajectory_cmd_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id,
-                                                        0, TRAJECTORY_FOLLOWING_START, looping);
+	                0, TRAJECTORY_FOLLOWING_START, looping);
 	send_mavlink_msg_to_serial(&msg);
 }
 
@@ -235,7 +235,7 @@ void TrajectoryManager::stop()
 {
 	mavlink_message_t msg;
 	mavlink_msg_polynomial_trajectory_cmd_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id,
-                                                        0, TRAJECTORY_FOLLOWING_STOP, 0);
+	                0, TRAJECTORY_FOLLOWING_STOP, 0);
 	send_mavlink_msg_to_serial(&msg);
 }
 

@@ -135,12 +135,12 @@ void VINSMonoBridge::send_pose_to_serial(nav_msgs::Odometry& ros_msg)
 	msg_pos += sizeof(float);
 
 	//end byte
-        msg_buf[msg_pos] = '+';
+	msg_buf[msg_pos] = '+';
 	msg_pos += sizeof(uint8_t);
 
 	/* generate and fill the checksum field */
 	msg_buf[1] = generate_checksum_byte(VINS_MONO_CHECKSUM_INIT_VAL, (uint8_t *)&msg_buf[3],
-                                            VINS_MONO_SERIAL_MSG_SIZE - 4);
+	                                    VINS_MONO_SERIAL_MSG_SIZE - 4);
 
 	serial_puts(msg_buf, VINS_MONO_SERIAL_MSG_SIZE);
 }
@@ -170,10 +170,10 @@ bool VINSMonoBridge::imu_message_decode(sensor_msgs::Imu& imu_msg)
 		/* confirm checksum value */
 		uint8_t recvd_checksum = this->imu.buf[1];
 		uint8_t checksum = generate_checksum_byte(IMU_CHECKSUM_INIT_VAL, &this->imu.buf[3],
-                                                          IMU_SERIAL_MSG_SIZE - 3);
+		                   IMU_SERIAL_MSG_SIZE - 3);
 		if(checksum != recvd_checksum) {
 			/* checksum error */
-			return false; //TODO: count checksum error times 
+			return false; //TODO: count checksum error times
 		}
 
 		/* decode package */
@@ -183,7 +183,7 @@ bool VINSMonoBridge::imu_message_decode(sensor_msgs::Imu& imu_msg)
 		memcpy(&imu.gyro[0], &this->imu.buf[14], sizeof(float));
 		memcpy(&imu.gyro[1], &this->imu.buf[18], sizeof(float));
 		memcpy(&imu.gyro[2], &this->imu.buf[22], sizeof(float));
-	
+
 		/* prepare ros message */
 		imu_msg.header.stamp = ros::Time::now();
 		imu_msg.header.frame_id = "base_link";
@@ -193,12 +193,14 @@ bool VINSMonoBridge::imu_message_decode(sensor_msgs::Imu& imu_msg)
 		imu_msg.angular_velocity.x = +imu.gyro[1] * M_PI / 180.0f;
 		imu_msg.angular_velocity.y = +imu.gyro[0] * M_PI / 180.0f;
 		imu_msg.angular_velocity.z = -imu.gyro[2] * M_PI / 180.0f;
-		imu_msg.angular_velocity_covariance={1.2184696791468346e-07, 0.0, 0.0,
-                                                     0.0, 1.2184696791468346e-07, 0.0,
-                                                     0.0, 0.0, 1.2184696791468346e-07};
- 		imu_msg.linear_acceleration_covariance={8.999999999999999e-08, 0.0, 0.0,
-                                                        0.0, 8.999999999999999e-08, 0.0,
-                                                        0.0, 0.0, 8.999999999999999e-08};
+		imu_msg.angular_velocity_covariance= {1.2184696791468346e-07, 0.0, 0.0,
+		                                      0.0, 1.2184696791468346e-07, 0.0,
+		                                      0.0, 0.0, 1.2184696791468346e-07
+		                                     };
+		imu_msg.linear_acceleration_covariance= {8.999999999999999e-08, 0.0, 0.0,
+		                                         0.0, 8.999999999999999e-08, 0.0,
+		                                         0.0, 0.0, 8.999999999999999e-08
+		                                        };
 
 		return true;
 	}

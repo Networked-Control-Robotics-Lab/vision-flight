@@ -10,7 +10,7 @@
 using namespace std;
 
 /* reception (imu datas) */
-#define IMU_SERIAL_MSG_SIZE 27 
+#define IMU_SERIAL_MSG_SIZE 27
 #define IMU_CHECKSUM_INIT_VAL 19
 
 /* transmission (pose datas) */
@@ -25,8 +25,9 @@ typedef struct {
 	uint8_t buf[IMU_SERIAL_MSG_SIZE];
 } imu_t ;
 
-class VINSMonoBridge {
-	private:
+class VINSMonoBridge
+{
+private:
 	int serial_fd;
 	imu_t imu;
 	bool kill_thread_signal;
@@ -40,9 +41,9 @@ class VINSMonoBridge {
 	bool imu_message_decode(sensor_msgs::Imu& imu_msg);
 	void serial_tx_thread_entry();
 
-	public:
+public:
 	VINSMonoBridge(string serial_port, int baudrate): kill_thread_signal(false),
-                                                          thread_imu_rx(nullptr)
+		thread_imu_rx(nullptr)
 	{
 		imu.buf_pos = 0;
 
