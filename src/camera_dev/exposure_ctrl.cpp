@@ -7,12 +7,14 @@
 using namespace std;
 using namespace cv;
 
+#define OPTIMAL_EXPOSURE_BINARY_SEARCH 1
+
 void generate_gradient_image(cv::Mat& raw_img, cv::Mat& gradient_img)
 {
-        int kernel_size = 3;
-        int scale = 1;
-        int desired_depth = CV_16S;
-        int delta = 0;
+	int kernel_size = 3;
+	int scale = 1;
+	int desired_depth = CV_16S;
+	int delta = 0;
 
 	cv::Mat gaussian_img, gray_img, gradient16_img;
 
@@ -47,7 +49,96 @@ float calculate_image_gradient_strength(cv::Mat& gradient_img)
 	return gradient_strength;
 }
 
-int scan_best_camera_exposure(int max_exp, bool debug_on)
+float grade_new_image(ROSCamDev& ros_cam_dev, int exp, int sleep_time)
+{
+	cv::Mat raw_img, gradient_img;
+
+	arducam_ros_exposure_ctrl(exp);
+	usleep(sleep_time);
+
+	ros_cam_dev.clear();
+	ros_cam_dev.read(raw_img);
+
+	generate_gradient_image(raw_img, gradient_img);
+	return calculate_image_gradient_strength(gradient_img);
+}
+
+int binary_search_best_camera_exposure(int max_exp, bool debug_on)
+{
+	ROSCamDev ros_cam_dev("/arducam/triggered/camera/image_raw");
+	int sleep_time = 150000;
+
+	int N = 1024;
+	int n = N;
+
+	int best_interval = 0;
+	int left_index, right_index;
+
+	float grade_left, grade_right;
+	float grade_max = grade_new_image(ros_cam_dev, 0, sleep_time);
+
+	int exp_left, exp_right;
+
+	while(n > 0) {
+		/* calculate next two search interval */
+		left_index = best_interval - n;
+		right_index = best_interval + n;
+
+		/* calculate exposure of the intervals */
+		exp_left = (int)((float)max_exp / (float)N * left_index);
+		exp_right = (int)((float)max_exp / (float)N * right_index);
+
+		/* take new pictures and calculate the grade of the exposure */
+		if(left_index > 0) {
+			grade_left = grade_new_image(ros_cam_dev, exp_left, sleep_time);
+		}
+		if(right_index < N) {
+			grade_right = grade_new_image(ros_cam_dev, exp_right, sleep_time);
+		}
+
+		/* left and right index are valid */
+		if(left_index >= 0 && right_index <= N) {
+			if(grade_left > grade_right > grade_max) {
+				grade_max - grade_left;
+				best_interval = left_index;
+			} else if(grade_right > grade_left > grade_max) {
+				grade_max = grade_right;
+				best_interval = right_index;
+			}
+			/* right index is invalid */
+		} else if(left_index >= 0 && right_index > N) {
+			if(grade_left > grade_max) {
+				grade_max = grade_left;
+				best_interval = left_index;
+			}
+			/* left index is invalid */
+		} else if(left_index < 0 && right_index <= N) {
+			if(grade_right > grade_max) {
+				grade_max = grade_right;
+				best_interval = right_index;
+			}
+		}
+
+		if(debug_on == true) {
+			printf("n=%d, interval=%d, grade = %f\n\r", n, best_interval, grade_max);
+		}
+
+		/* binary serach schrinking */
+		n = n / 2;
+	}
+
+	/* set camera to the best exposure value */
+	int best_exp = (int)((float)max_exp / (float)N * best_interval);
+	arducam_ros_exposure_ctrl(best_exp);
+
+	if(debug_on == true) {
+		printf("best exposure time = %d\n\r", best_exp);
+	}
+
+	return best_exp;
+}
+
+int full_search_best_camera_exposure(int max_exp, bool debug_on)
 {
 	ROSCamDev ros_cam_dev("/arducam/triggered/camera/image_raw");
 
@@ -62,7 +153,7 @@ int scan_best_camera_exposure(int max_exp, bool debug_on)
 	arducam_ros_exposure_ctrl(0);
 	usleep(sleep_time);
 	ros_cam_dev.clear(); //make sure we are not using the old data in buffer
-	ros_cam_dev.read(raw_img);	
+	ros_cam_dev.read(raw_img);
 	generate_gradient_image(raw_img, gradient_img);
 	max_grad_val = calculate_image_gradient_strength(gradient_img);
 
@@ -137,6 +228,15 @@ int scan_best_camera_exposure(int max_exp, bool debug_on)
 	}
 
 	return best_exp;
+}
+
+int scan_best_camera_exposure(int max_exp, bool debug_on)
+{
+#if (OPTIMAL_EXPOSURE_BINARY_SEARCH != 0)
+	return binary_search_best_camera_exposure(max_exp, debug_on);
+#else
+	return full_search_best_camera_exposure(max_exp, debug_on);
+#endif
 }
 
 void camera_exposure_test()
