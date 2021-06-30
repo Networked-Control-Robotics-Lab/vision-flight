@@ -13,7 +13,7 @@ ExposureController::ExposureController()
 	ros_cam_dev = new ROSCamDev("/arducam/triggered/camera/image_raw");
 	this->step_size = 2000;
 	this->exp_min = 0;
-	this->exp_max = 3000;
+	this->exp_max = 5000;
 	this->intensity_threshold = 0.07;
 	this->exp_curr;
 }
@@ -136,21 +136,21 @@ int ExposureController::binary_search_adjustment(bool debug_on)
 		right_index = best_interval + n;
 
 		/* calculate exposure of the intervals */
-		exp_left = (int)((float)this->exp_max / (float)N * left_index);
-		exp_right = (int)((float)this->exp_max / (float)N * right_index);
+		exp_left = (int)((float)this->exp_max / (float)(N + 1) * left_index);
+		exp_right = (int)((float)this->exp_max / (float)(N + 1) * right_index);
 
 		/* take new pictures and calculate the grade of the exposure */
-		if(left_index > 0) {
+		if(left_index >= 0) {
 			grade_left = grade_laplacian(exp_left, sleep_time);
 		}
-		if(right_index < N) {
+		if(right_index <= N) {
 			grade_right = grade_laplacian(exp_right, sleep_time);
 		}
 
 		/* left and right index are valid */
 		if(left_index >= 0 && right_index <= N) {
 			if(grade_left > grade_right > grade_max) {
-				grade_max - grade_left;
+				grade_max = grade_left;
 				best_interval = left_index;
 			} else if(grade_right > grade_left > grade_max) {
 				grade_max = grade_right;
