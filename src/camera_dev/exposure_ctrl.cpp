@@ -91,7 +91,9 @@ void ExposureController::realtime_adjustment()
 	intensity_now = calculate_average_intensity(frame);
 
 	float intensity_change = intensity_now - intensity_last;
-	if(fabs(intensity_change) > intensity_threshold) {
+	intensity_last = intensity_now;
+
+	if(fabs(intensity_change) > this->intensity_threshold) {
 		/* gradient descent */
 		float delta_exp = -intensity_change * this->step_size;
 		this->exp_curr += delta_exp;
