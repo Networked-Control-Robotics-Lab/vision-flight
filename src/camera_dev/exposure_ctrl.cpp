@@ -13,7 +13,7 @@ ExposureController::ExposureController()
 	ros_cam_dev = new ROSCamDev("/arducam/triggered/camera/image_raw");
 	this->step_size = 2000;
 	this->exp_min = 0;
-	this->exp_max = 5000;
+	this->exp_max = 2000;
 	this->intensity_threshold = 0.07;
 	this->exp_curr;
 }
