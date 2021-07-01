@@ -11,11 +11,10 @@ using namespace cv;
 ExposureController::ExposureController()
 {
 	ros_cam_dev = new ROSCamDev("/arducam/triggered/camera/image_raw");
-	this->step_size = 2000;
 	this->exp_min = 0;
-	this->exp_max = 2000;
-	this->intensity_threshold = 0.07;
-	this->exp_curr;
+	this->exp_max = 3000;
+	this->kp = 4000;
+	this->kd = 1000;
 }
 
 void ExposureController::convert_to_laplacian(cv::Mat& raw_img, cv::Mat& laplacian_img)
@@ -90,27 +89,28 @@ void ExposureController::realtime_adjustment(bool debug_on)
 	ros_cam_dev->read(frame);
 	intensity_now = calculate_average_intensity(frame);
 
-	float intensity_change = intensity_now - intensity_last;
+	/* pd control */
+	float intensity_setpoint = 0.6; //0-1.0
+	float error = intensity_setpoint - intensity_now;
+	float error_derivative = intensity_now - intensity_last;
+
 	intensity_last = intensity_now;
 
-	if(fabs(intensity_change) > this->intensity_threshold) {
-		/* gradient descent */
-		float delta_exp = -intensity_change * this->step_size;
-		this->exp_curr += delta_exp;
+	this->exp_curr = this->kp * error + this->kd * error_derivative;
 
-		/* bound camera exposure value */
-		if(this->exp_curr > this->exp_max) {
-			this->exp_curr = this->exp_max;
-		} else if(this->exp_curr < this->exp_min) {
-			this->exp_curr = this->exp_min;
-		}
+	printf("error = %f, error_derivative=%f, exposure=%f\n\r",
+	       error, error_derivative, this->exp_curr);
 
-		arducam_ros_exposure_ctrl((int)this->exp_curr);
+	/* bound camera exposure value */
+	if(this->exp_curr > this->exp_max) {
+		this->exp_curr = this->exp_max;
+	} else if(this->exp_curr < this->exp_min) {
+		this->exp_curr = this->exp_min;
+	}
 
-		if(debug_on == true) {
-			printf("intensity change = %f, new exposure = %f\n\r",
-			       intensity_change, this->exp_curr);
-		}
+	arducam_ros_exposure_ctrl((int)this->exp_curr);
+
+	if(debug_on == true) {
 	}
 }
 

@@ -10,8 +10,8 @@ private:
 	float exp_max;
 	float exp_curr;
 
-	float step_size;
-	float intensity_threshold;
+	float kp;
+	float kd;
 	float intensity_last;
 
 	void convert_to_laplacian(cv::Mat& raw_img, cv::Mat& laplacian_img);
