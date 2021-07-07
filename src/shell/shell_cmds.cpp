@@ -114,12 +114,6 @@ void shell_cmd_fly(char param_list[PARAM_LIST_SIZE_MAX][PARAM_LEN_MAX], int para
 
 	if(strcmp(shell.buf, "y") == 0 || strcmp(shell.buf, "Y") == 0) {
 		mission_manager.waypoint.send_goto_cmd(0, pos[0], pos[1], pos[2]);
-
-		//if() {
-		//	shell_puts("failed, waypoint out of geo-fence!\n\r");
-		//} else {
-		shell_puts("command accept.\n\r");
-		//}
 	} else {
 		shell_puts("abort.\n\r");
 	}

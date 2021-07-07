@@ -259,7 +259,7 @@ bool WaypointManager::send_command_long_message(const char* prompt, uint16_t cmd
 		printf("%s", prompt);
 
 		mavlink_msg_command_long_pack_chan(GROUND_STATION_ID, 1, MAVLINK_COMM_1, &msg, this->target_id, 0,
-		                                   MAV_CMD_MISSION_START, confirm, params[0], params[1], params[2], params[3],
+		                                   cmd, confirm, params[0], params[1], params[2], params[3],
 		                                   params[4], params[5], params[6]);
 		send_mavlink_msg_to_serial(&msg);
 
